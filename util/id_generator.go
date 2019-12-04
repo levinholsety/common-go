@@ -10,7 +10,6 @@ import (
 const (
 	nodeIDBitLen           = 10
 	sequenceIDBitLen       = 12
-	timestampBitLen        = 63 - nodeIDBitLen - sequenceIDBitLen
 	epoch            int64 = 1477958400000
 )
 
@@ -22,7 +21,7 @@ type IDGenerator struct {
 	lock       sync.Mutex
 }
 
-// NewIDGenerator creates an IDGenerator instance with specified node ID.
+// NewIDGenerator creates an IDGenerator instance with specified node ID[0,1024).
 func NewIDGenerator(nodeID int64) *IDGenerator {
 	return &IDGenerator{
 		nodeID: nodeID & (1<<nodeIDBitLen - 1),
@@ -32,7 +31,7 @@ func NewIDGenerator(nodeID int64) *IDGenerator {
 // GenerateID generates a new ID.
 func (p *IDGenerator) GenerateID() int64 {
 	timestamp, sequenceID := p.next()
-	id := timestamp
+	id := timestamp - epoch
 	id <<= nodeIDBitLen
 	id |= p.nodeID
 	id <<= sequenceIDBitLen
@@ -44,11 +43,10 @@ func (p *IDGenerator) next() (timestamp int64, sequenceID int64) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	timestamp = timeutil.CurrentTimeMillis()
-	sequenceID = p.sequenceID
 	if timestamp != p.timestamp {
 		sequenceID = 0
 	} else {
-		sequenceID++
+		sequenceID = p.sequenceID + 1
 		if sequenceID>>sequenceIDBitLen > 0 {
 			time.Sleep(time.Millisecond)
 			timestamp++
