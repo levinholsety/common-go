@@ -3,6 +3,8 @@ package fileutil
 import (
 	"io"
 	"os"
+
+	"github.com/levinholsety/common-go/ioutil"
 )
 
 // OpenRead opens a file for reading.
@@ -28,20 +30,16 @@ func OpenWrite(filename string, onOpen func(file *os.File) error) error {
 // ReadBlocks reads file in blocks.
 func ReadBlocks(filename string, blockSize int, onReadBlock func(block []byte) error) error {
 	return OpenRead(filename, func(file *os.File) error {
-		buf := make([]byte, blockSize)
-		for true {
-			n, err := file.Read(buf)
-			if err != nil && err != io.EOF {
-				return err
-			}
-			if n == 0 && err == io.EOF {
-				break
-			}
-			err = onReadBlock(buf[:n])
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+		return ioutil.ReadBlocks(file, blockSize, onReadBlock)
 	})
+}
+
+func Transform(transform func(w io.Writer, r io.Reader) (int64, error), dst string, src string) (n int64, err error) {
+	err = OpenRead(src, func(srcFile *os.File) error {
+		return OpenWrite(dst, func(dstFile *os.File) (err error) {
+			n, err = transform(dstFile, srcFile)
+			return
+		})
+	})
+	return
 }
