@@ -23,7 +23,7 @@ func FormatDuration(value time.Duration) string {
 	m = m % 60
 	h = h % 24
 	if d > 0 {
-		return fmt.Sprintf("%d-%02d:%02d:%02d.%03d", d, h, m, s, ms)
+		return fmt.Sprintf("%dd %02d:%02d:%02d.%03d", d, h, m, s, ms)
 	}
 	return fmt.Sprintf("%02d:%02d:%02d.%03d", h, m, s, ms)
 }
