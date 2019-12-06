@@ -13,7 +13,7 @@ func CurrentTimeMillis() int64 {
 
 // FormatDuration formats time duration.
 func FormatDuration(value time.Duration) string {
-	ms := value.Milliseconds()
+	ms := value.Nanoseconds() / 1e6
 	s := ms / 1000
 	m := s / 60
 	h := m / 60

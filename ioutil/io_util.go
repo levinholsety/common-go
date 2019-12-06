@@ -4,6 +4,7 @@ import (
 	"io"
 )
 
+// ReadBlocks reads from io.Reader in blocks.
 func ReadBlocks(r io.Reader, blockSize int, onReadBlock func(block []byte) error) error {
 	buf := make([]byte, blockSize)
 	for true {

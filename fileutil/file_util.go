@@ -34,10 +34,22 @@ func ReadBlocks(filename string, blockSize int, onReadBlock func(block []byte) e
 	})
 }
 
+// Transform copies a file to another place and performs specified transformation.
 func Transform(transform func(w io.Writer, r io.Reader) (int64, error), dst string, src string) (n int64, err error) {
 	err = OpenRead(src, func(srcFile *os.File) error {
 		return OpenWrite(dst, func(dstFile *os.File) (err error) {
 			n, err = transform(dstFile, srcFile)
+			return
+		})
+	})
+	return
+}
+
+// CopyFile copies a file to another place.
+func CopyFile(dst, src string) (n int64, err error) {
+	err = OpenRead(src, func(srcFile *os.File) error {
+		return OpenWrite(dst, func(dstFile *os.File) (err error) {
+			n, err = io.Copy(dstFile, srcFile)
 			return
 		})
 	})

@@ -30,6 +30,7 @@ func (f Fraction) validate() {
 	}
 }
 
+// String returns string of current fraction.
 func (f Fraction) String() string {
 	f.validate()
 	if f.Numerator == 0 {
