@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/levinholsety/common-go/timeutil"
+	"github.com/levinholsety/common-go/commtime"
 )
 
 const (
@@ -42,7 +42,7 @@ func (p *IDGenerator) GenerateID() int64 {
 func (p *IDGenerator) next() (timestamp int64, sequenceID int64) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	timestamp = timeutil.CurrentTimeMillis()
+	timestamp = commtime.CurrentTimeMillis()
 	if timestamp != p.timestamp {
 		sequenceID = 0
 	} else {
