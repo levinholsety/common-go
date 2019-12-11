@@ -1,10 +1,8 @@
-package fileutil
+package commio
 
 import (
 	"io"
 	"os"
-
-	"github.com/levinholsety/common-go/ioutil"
 )
 
 // OpenRead opens a file for reading.
@@ -25,13 +23,6 @@ func OpenWrite(filename string, onOpen func(file *os.File) error) error {
 	}
 	defer file.Close()
 	return onOpen(file)
-}
-
-// ReadBlocks reads file in blocks.
-func ReadBlocks(filename string, blockSize int, onReadBlock func(block []byte) error) error {
-	return OpenRead(filename, func(file *os.File) error {
-		return ioutil.ReadBlocks(file, blockSize, onReadBlock)
-	})
 }
 
 // Transform copies a file to another place and performs specified transformation.

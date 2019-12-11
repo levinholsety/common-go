@@ -1,7 +1,8 @@
-package util
+package comm
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 	"os"
 	"os/exec"
@@ -62,4 +63,18 @@ func RandomInt(max int) int {
 		panic(err)
 	}
 	return int(value.Int64())
+}
+
+func Try(f func()) (err error) {
+	defer func() {
+		if obj := recover(); obj != nil {
+			err = obj.(error)
+		}
+	}()
+	f()
+	return
+}
+
+func Throw(errMsg string) {
+	panic(errors.New(errMsg))
 }
