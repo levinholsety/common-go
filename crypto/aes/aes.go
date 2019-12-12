@@ -1,53 +1,74 @@
 package aes
 
 import (
+	"bytes"
 	"crypto/aes"
+	"crypto/cipher"
+	"io"
 
-	"github.com/levinholsety/common-go/crypto"
-	"github.com/levinholsety/common-go/crypto/padding"
+	c "github.com/levinholsety/common-go/crypto/cipher"
+	"github.com/levinholsety/common-go/crypto/mode"
+	"github.com/levinholsety/common-go/crypto/paddings"
 )
 
-// NewAES creates a cipher with ECB mode to encrypt or decrypt data.
-func NewAES(key []byte) *crypto.Cipher {
-	cb, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err)
+func encrypt(b cipher.Block, src []byte) (dst []byte, err error) {
+	w := bytes.NewBuffer(make([]byte, 0, len(src)))
+	cw := c.NewCipherWriter(w, b, paddings.PKCS7)
+	r := bytes.NewReader(src)
+	if _, err = io.Copy(cw, r); err != nil {
+		return
 	}
-	return &crypto.Cipher{
-		Block:   cb,
-		Padding: padding.PKCS7Padding,
+	if err = cw.Close(); err != nil {
+		return
 	}
+	dst = w.Bytes()
+	return
 }
 
-// NewAESCBC creates a cipher with CBC mode to encrypt or decrypt data.
-// This cipher cannot be reused.
-func NewAESCBC(key, iv []byte) *crypto.Cipher {
-	cb, err := aes.NewCipher(key)
+func decrypt(b cipher.Block, src []byte) (dst []byte, err error) {
+	w := bytes.NewBuffer(make([]byte, 0, len(src)))
+	r, err := c.NewCipherReader(bytes.NewReader(src), b, paddings.PKCS7)
 	if err != nil {
-		panic(err)
+		return
 	}
-	return &crypto.Cipher{
-		Block:   crypto.NewCBC(cb, iv),
-		Padding: padding.PKCS7Padding,
+	if _, err = io.Copy(w, r); err != nil {
+		return
 	}
+	dst = w.Bytes()
+	return
 }
 
-// // NewWriter creates a AES writer.
-// func NewWriter(w io.Writer, key, iv []byte) (aesWriter io.WriteCloser, err error) {
-// 	c := NewAES(key)
-// 	if iv != nil {
-// 		c = c.CBC(iv)
-// 	}
-// 	aesWriter = crypto.NewCipherWriter(w, c.Block, c.Padding)
-// 	return
-// }
+func Encrypt(src, key []byte) ([]byte, error) {
+	b, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	return encrypt(b, src)
+}
 
-// // NewReader creates a AES reader.
-// func NewReader(r io.Reader, key, iv []byte) (aesReader io.Reader, err error) {
-// 	c := NewAES(key)
-// 	if iv != nil {
-// 		c = c.CBC(iv)
-// 	}
-// 	aesReader = crypto.NewCipherReader(r, c.Block, c.Padding)
-// 	return
-// }
+func Decrypt(src, key []byte) ([]byte, error) {
+	b, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	return decrypt(b, src)
+}
+
+func EncryptCBC(src, key, iv []byte) (dst []byte, err error) {
+	b, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	return encrypt(mode.NewCBC(b, iv), src)
+}
+func DecryptCBC(src, key, iv []byte) ([]byte, error) {
+	b, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	return decrypt(mode.NewCBC(b, iv), src)
+}
+
+func NewECB(key []byte) (cipher.Block, error) {
+	return aes.NewCipher(key)
+}

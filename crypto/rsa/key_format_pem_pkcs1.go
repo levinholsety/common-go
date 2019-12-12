@@ -52,8 +52,8 @@ func (f *pemPKCS1FormatPrivateKey) DecodeEncryptedPrivateKey(pemData, password [
 						password = []byte(scanner.Text())
 					}
 				}
-				aes.GenerateKey(password, salt, md5.New(), key)
-				data = aes.NewAESCBC(key, iv).Decrypt(block.Bytes)
+				aes.NewKey(password, salt, md5.New(), key)
+				data, err = aes.DecryptCBC(block.Bytes, key, iv)
 			} else {
 				err = fmt.Errorf("unsupported DEK-Info: %s", v)
 				return

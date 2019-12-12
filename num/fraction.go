@@ -1,4 +1,4 @@
-package commnum
+package num
 
 import (
 	"errors"

@@ -3,22 +3,23 @@ package aes
 import (
 	"hash"
 
-	"github.com/levinholsety/common-go/util"
+	"github.com/levinholsety/common-go/comm"
 )
 
-//NewKey creates a 256 bits AES key.
-func NewKey() []byte {
-	return util.RandomBytes(32)
+// GenerateKey generates a 256 bits AES key.
+func GenerateKey() ([]byte, error) {
+	return comm.RandomBytes(32)
 }
 
-//NewIV creates a IV.
-func NewIV() []byte {
-	return util.RandomBytes(16)
+// GenerateIV generates a IV.
+func GenerateIV() ([]byte, error) {
+	return comm.RandomBytes(16)
 }
 
-//GenerateKey generates key.
-func GenerateKey(password, salt []byte, alg hash.Hash, key []byte) {
-	for i := 0; i < len(key); i += alg.Size() {
+// NewKey creates key from password.
+func NewKey(password, salt []byte, alg hash.Hash, key []byte) {
+	keySize := len(key)
+	for i := 0; i < keySize; i += alg.Size() {
 		alg.Reset()
 		if i > 0 {
 			alg.Write(key[i-alg.Size() : i])

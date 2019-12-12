@@ -1,4 +1,4 @@
-package commtime
+package timeutil
 
 import (
 	"fmt"

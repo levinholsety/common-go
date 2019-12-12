@@ -24,26 +24,32 @@ func NewTextWriter(w io.Writer) *TextWriter {
 }
 
 // Write writes byte array.
-func (p *TextWriter) Write(value []byte) int {
-	n, err := p.Writer.Write(value)
-	if err != nil {
-		panic(err)
-	}
-	return n
+func (p *TextWriter) Write(value []byte) (int, error) {
+	return p.Writer.Write(value)
 }
 
 // WriteString writes string value.
-func (p *TextWriter) WriteString(value string) int {
+func (p *TextWriter) WriteString(value string) (int, error) {
 	return p.Write([]byte(value))
 }
 
 // WriteLine writes text followed with a line separator.
-func (p *TextWriter) WriteLine(text string) (n int) {
+func (p *TextWriter) WriteLine(text string) (n int, err error) {
+	var num int
 	for i := 0; i < p.indent; i++ {
-		n += p.WriteString(p.IndentationString)
+		if num, err = p.WriteString(p.IndentationString); err != nil {
+			return
+		}
+		n += num
 	}
-	n += p.WriteString(text)
-	n += p.WriteString(p.LineSeparator)
+	if num, err = p.WriteString(text); err != nil {
+		return
+	}
+	n += num
+	if num, err = p.WriteString(p.LineSeparator); err != nil {
+		return
+	}
+	n += num
 	return
 }
 

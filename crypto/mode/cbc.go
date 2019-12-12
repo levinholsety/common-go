@@ -1,4 +1,4 @@
-package crypto
+package mode
 
 import (
 	"crypto/cipher"
@@ -6,22 +6,22 @@ import (
 	"unsafe"
 )
 
-// CBC represents AES CBC mode.
+// CBC (Cipher Block Chaining) is a cipher mode.
 type CBC struct {
-	cb  cipher.Block
-	iv  []byte
-	buf []byte
+	block cipher.Block
+	iv    []byte
+	buf   []byte
 }
 
 var _ cipher.Block = new(CBC)
 
 // NewCBC creates a cipher with CBC mode.
-func NewCBC(cipherBlock cipher.Block, iv []byte) cipher.Block {
-	blockSize := cipherBlock.BlockSize()
+func NewCBC(b cipher.Block, iv []byte) cipher.Block {
+	blockSize := b.BlockSize()
 	cbc := &CBC{
-		cb:  cipherBlock,
-		iv:  make([]byte, blockSize),
-		buf: make([]byte, blockSize),
+		block: b,
+		iv:    make([]byte, blockSize),
+		buf:   make([]byte, blockSize),
 	}
 	copy(cbc.iv, iv)
 	return cbc
@@ -29,19 +29,19 @@ func NewCBC(cipherBlock cipher.Block, iv []byte) cipher.Block {
 
 // BlockSize returns block size.
 func (p *CBC) BlockSize() int {
-	return p.cb.BlockSize()
+	return p.block.BlockSize()
 }
 
 // Encrypt encrypts a block.
 func (p *CBC) Encrypt(dst, src []byte) {
 	xorBytes(p.buf, src, p.iv)
-	p.cb.Encrypt(dst, p.buf)
+	p.block.Encrypt(dst, p.buf)
 	copy(p.iv, dst)
 }
 
 // Decrypt decrypts a block.
 func (p *CBC) Decrypt(dst, src []byte) {
-	p.cb.Decrypt(p.buf, src)
+	p.block.Decrypt(p.buf, src)
 	xorBytes(dst, p.buf, p.iv)
 	copy(p.iv, src)
 }

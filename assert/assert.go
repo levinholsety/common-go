@@ -8,7 +8,7 @@ import (
 
 func NoError(tb testing.TB, err error) {
 	if err != nil {
-		tb.Errorf("Assert failed:\nerror: %s\n", err.Error())
+		tb.Errorf("Assert failed: %w", err)
 	}
 }
 

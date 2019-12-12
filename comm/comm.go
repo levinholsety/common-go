@@ -2,7 +2,6 @@ package comm
 
 import (
 	"crypto/rand"
-	"errors"
 	"math/big"
 	"os"
 	"os/exec"
@@ -14,26 +13,14 @@ var defaultIDGenerator = NewIDGenerator(0)
 var (
 	//ExecutablePath returns the executable file path.
 	ExecutablePath = func() (executablePath string) {
-		executablePath, err := exec.LookPath(os.Args[0])
-		if err != nil {
-			panic(err)
-		}
-		executablePath, err = filepath.Abs(executablePath)
-		if err != nil {
-			panic(err)
-		}
+		executablePath, _ = exec.LookPath(os.Args[0])
+		executablePath, _ = filepath.Abs(executablePath)
 		return
 	}()
 	//ExecutableDir returns the directory of executable file.
 	ExecutableDir = filepath.Dir(ExecutablePath)
 	//StartupPath returns the current working directory.
-	StartupPath = func() (startupPath string) {
-		startupPath, err := filepath.Abs(filepath.Dir("."))
-		if err != nil {
-			panic(err)
-		}
-		return
-	}()
+	StartupPath, _ = filepath.Abs(".")
 )
 
 // GenerateID generates a new ID with default IDGenerator.
@@ -42,39 +29,21 @@ func GenerateID() int64 {
 }
 
 //Random fill random bytes in buffer.
-func Random(buf []byte) {
-	_, err := rand.Read(buf)
-	if err != nil {
-		panic(err)
-	}
+func Random(buf []byte) (err error) {
+	_, err = rand.Read(buf)
+	return
 }
 
 //RandomBytes returns random bytes in specified length.
-func RandomBytes(length int) (buf []byte) {
-	buf = make([]byte, length)
-	Random(buf)
+func RandomBytes(length int) (result []byte, err error) {
+	result = make([]byte, length)
+	err = Random(result)
 	return
 }
 
 //RandomInt returns a random int value from 0 to max.
-func RandomInt(max int) int {
+func RandomInt(max int) (result int, err error) {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
-	if err != nil {
-		panic(err)
-	}
-	return int(value.Int64())
-}
-
-func Try(f func()) (err error) {
-	defer func() {
-		if obj := recover(); obj != nil {
-			err = obj.(error)
-		}
-	}()
-	f()
+	result = int(value.Int64())
 	return
-}
-
-func Throw(errMsg string) {
-	panic(errors.New(errMsg))
 }

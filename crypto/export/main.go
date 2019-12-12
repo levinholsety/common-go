@@ -8,12 +8,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"hash"
+	"os"
 	"reflect"
 	"unsafe"
 
+	"github.com/levinholsety/common-go/commio"
 	"github.com/levinholsety/common-go/crypto/aes"
 	"github.com/levinholsety/common-go/crypto/rsa"
-	"github.com/levinholsety/common-go/fileutil"
 )
 
 func main() {}
@@ -38,11 +39,12 @@ func newCString(value string) *cchar {
 }
 
 func digest(filename string, h hash.Hash) string {
-	err := fileutil.ReadBlocks(filename, 0x10000, func(block []byte) (err error) {
-		_, err = h.Write(block)
-		return
-	})
-	if err != nil {
+	if err := commio.OpenRead(filename, func(file *os.File) error {
+		return commio.ReadBlocks(file, 0x10000, func(block []byte) (err error) {
+			_, err = h.Write(block)
+			return
+		})
+	}); err != nil {
 		panic(err)
 	}
 	return hex.EncodeToString(h.Sum(nil))
@@ -65,12 +67,20 @@ func sha256Digest(cFilename *cchar) *cchar {
 
 //export aesNewKey
 func aesNewKey() *cchar {
-	return newCString(hex.EncodeToString(aes.NewKey()))
+	key, err := aes.GenerateKey()
+	if err != nil {
+		panic(err)
+	}
+	return newCString(hex.EncodeToString(key))
 }
 
 //export aesNewIV
 func aesNewIV() *cchar {
-	return newCString(hex.EncodeToString(aes.NewIV()))
+	iv, err := aes.GenerateIV()
+	if err != nil {
+		panic(err)
+	}
+	return newCString(hex.EncodeToString(iv))
 }
 
 //export aesEncrypt
@@ -82,7 +92,11 @@ func aesEncrypt(cData *cchar, cDataLength C.int, cKey *cchar, cBuffer *cchar, cB
 	}
 	data := cData.goBytes(cDataLength)
 	buffer := cBuffer.goBytes(cBufferLength)
-	return C.int(copy(buffer, aes.NewAES(key).Encrypt(data)))
+	encData, err := aes.Encrypt(data, key)
+	if err != nil {
+		panic(err)
+	}
+	return C.int(copy(buffer, encData))
 }
 
 //export aesDecrypt
@@ -94,7 +108,11 @@ func aesDecrypt(cData *cchar, cDataLength C.int, cKey *cchar, cBuffer *cchar, cB
 	}
 	data := cData.goBytes(cDataLength)
 	buffer := cBuffer.goBytes(cBufferLength)
-	return C.int(copy(buffer, aes.NewAES(key).Decrypt(data)))
+	decData, err := aes.Decrypt(data, key)
+	if err != nil {
+		panic(err)
+	}
+	return C.int(copy(buffer, decData))
 }
 
 //export aesCBCEncrypt
@@ -111,7 +129,11 @@ func aesCBCEncrypt(cData *cchar, cDataLength C.int, cKey *cchar, cIV *cchar, cBu
 	}
 	data := cData.goBytes(cDataLength)
 	buffer := cBuffer.goBytes(cBufferLength)
-	return C.int(copy(buffer, aes.NewAESCBC(key, iv).Encrypt(data)))
+	encData, err := aes.EncryptCBC(data, key, iv)
+	if err != nil {
+		panic(err)
+	}
+	return C.int(copy(buffer, encData))
 }
 
 //export aesCBCDecrypt
@@ -128,7 +150,11 @@ func aesCBCDecrypt(cData *cchar, cDataLen C.int, cKey *cchar, cIV *cchar, cBuffe
 	}
 	data := cData.goBytes(cDataLen)
 	buffer := cBuffer.goBytes(cBufferLength)
-	return C.int(copy(buffer, aes.NewAESCBC(key, iv).Decrypt(data)))
+	decData, err := aes.DecryptCBC(data, key, iv)
+	if err != nil {
+		panic(err)
+	}
+	return C.int(copy(buffer, decData))
 }
 
 //export rsaNewPrivateKey
