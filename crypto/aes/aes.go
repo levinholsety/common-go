@@ -7,7 +7,6 @@ import (
 	"io"
 
 	c "github.com/levinholsety/common-go/crypto/cipher"
-	"github.com/levinholsety/common-go/crypto/mode"
 	"github.com/levinholsety/common-go/crypto/paddings"
 )
 
@@ -59,14 +58,15 @@ func EncryptCBC(src, key, iv []byte) (dst []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return encrypt(mode.NewCBC(b, iv), src)
+	return encrypt(c.NewCBC(b, iv), src)
 }
+
 func DecryptCBC(src, key, iv []byte) ([]byte, error) {
 	b, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	return decrypt(mode.NewCBC(b, iv), src)
+	return decrypt(c.NewCBC(b, iv), src)
 }
 
 func NewECB(key []byte) (cipher.Block, error) {

@@ -1,4 +1,4 @@
-package mode
+package cipher
 
 import (
 	"crypto/cipher"

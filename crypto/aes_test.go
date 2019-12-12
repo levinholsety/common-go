@@ -12,7 +12,6 @@ import (
 	"github.com/levinholsety/common-go/commio"
 	"github.com/levinholsety/common-go/crypto/aes"
 	"github.com/levinholsety/common-go/crypto/cipher"
-	"github.com/levinholsety/common-go/crypto/mode"
 	"github.com/levinholsety/common-go/crypto/paddings"
 )
 
@@ -182,7 +181,7 @@ func newEncryptor(key, iv []byte) func(w io.Writer, r io.Reader) (n int64, err e
 func (p *encryptor) transform(w io.Writer, r io.Reader) (n int64, err error) {
 	b, err := aes.NewECB(key)
 	if iv != nil {
-		b = mode.NewCBC(b, iv)
+		b = cipher.NewCBC(b, iv)
 	}
 	cw := cipher.NewCipherWriter(w, b, paddings.PKCS7)
 	if n, err = io.Copy(cw, r); err != nil {
@@ -208,7 +207,7 @@ func newDecryptor(key, iv []byte) func(w io.Writer, r io.Reader) (n int64, err e
 func (p *decryptor) transform(w io.Writer, r io.Reader) (n int64, err error) {
 	b, err := aes.NewECB(key)
 	if iv != nil {
-		b = mode.NewCBC(b, iv)
+		b = cipher.NewCBC(b, iv)
 	}
 	cr, err := cipher.NewCipherReader(r, b, paddings.PKCS7)
 	if err != nil {
