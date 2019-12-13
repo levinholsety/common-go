@@ -32,10 +32,6 @@ type KeyFormat interface {
 }
 
 //NewPrivateKey generates a RSA 2048 bits private key.
-func NewPrivateKey() (key *rsa.PrivateKey) {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		panic(err)
-	}
-	return
+func NewPrivateKey() (*rsa.PrivateKey, error) {
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

@@ -10,7 +10,8 @@ import (
 
 func Test_RSA_EncryptAndDecrypt(t *testing.T) {
 	data, _ := comm.RandomBytes(10000)
-	privateKey := rsa.NewPrivateKey()
+	privateKey, err := rsa.NewPrivateKey()
+	assert.NoError(t, err)
 	encrypted, err := rsa.Encrypt(data, &privateKey.PublicKey)
 	assert.NoError(t, err)
 	decrypted, err := rsa.Decrypt(encrypted, privateKey)
