@@ -11,21 +11,27 @@ const (
 	DelimNull byte = 0
 )
 
+// errors.
 var (
-	errInvalidSize = errors.New("invalid size")
+	ErrInvalidSize = errors.New("invalid size")
+	ErrCannotSeek  = errors.New("cannot seek")
 )
 
 // NewBinaryReader creates an instance of BinaryReader.
-func NewBinaryReader(r io.Reader, order binary.ByteOrder) *BinaryReader {
-	return &BinaryReader{
+func NewBinaryReader(r io.Reader, order binary.ByteOrder) (br *BinaryReader) {
+	br = &BinaryReader{
 		reader:    r,
 		ByteOrder: order,
 	}
+	br.seeker, br.seekable = r.(io.Seeker)
+	return
 }
 
 // BinaryReader provides methods to read data.
 type BinaryReader struct {
 	reader    io.Reader
+	seeker    io.Seeker
+	seekable  bool
 	ByteOrder binary.ByteOrder
 }
 
@@ -127,7 +133,7 @@ func (p *BinaryReader) ReadUInt(size int) (result uint, err error) {
 		}
 		result = uint(v)
 	default:
-		err = errInvalidSize
+		err = ErrInvalidSize
 	}
 	return
 }
@@ -211,4 +217,22 @@ func (p *BinaryReader) MustReadString() string {
 		panic(err)
 	}
 	return result
+}
+
+// Seek seeks in internal object.
+func (p *BinaryReader) Seek(offset int64, whence int) (absOffset int64, err error) {
+	if !p.seekable {
+		err = ErrCannotSeek
+		return
+	}
+	return p.seeker.Seek(offset, whence)
+}
+
+// MustSeek seeks in internal object.
+func (p *BinaryReader) MustSeek(offset int64, whence int) int64 {
+	absOffset, err := p.Seek(offset, whence)
+	if err != nil {
+		panic(err)
+	}
+	return absOffset
 }
