@@ -2,6 +2,7 @@ package comm
 
 import (
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"os"
 	"os/exec"
@@ -46,4 +47,26 @@ func RandomInt(max int) (result int, err error) {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
 	result = int(value.Int64())
 	return
+}
+
+// Try catches panic in f and returns error.
+func Try(f func()) (err error) {
+	defer func() {
+		if msg := recover(); msg != nil {
+			var ok bool
+			if err, ok = msg.(error); !ok {
+				err = fmt.Errorf("%v", msg)
+			}
+		}
+	}()
+	f()
+	return
+}
+
+// Throw panics with specified message.
+func Throw(msg interface{}) {
+	if err, ok := msg.(error); ok {
+		panic(err)
+	}
+	panic(fmt.Errorf("%v", msg))
 }
