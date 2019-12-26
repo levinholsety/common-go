@@ -7,115 +7,67 @@ import (
 
 var errDivideByZero = errors.New("/ by zero")
 
-// NewFraction creates a fraction with specified numerator and denominator.
-func NewFraction(numerator, denominator int) (f Fraction) {
-	f = Fraction{
-		Numerator:   numerator,
-		Denominator: denominator,
-	}
-	f.validate()
-	f.Numerator, f.Denominator = reduce(f.Numerator, f.Denominator)
-	return
-}
-
-// Fraction provides operations of fraction.
+// Fraction represents a fraction.
 type Fraction struct {
 	Numerator   int
 	Denominator int
 }
 
-func (f Fraction) validate() {
+// Reduce returns reduction of fraction.
+func (f Fraction) Reduce() Fraction {
 	if f.Denominator == 0 {
 		panic(errDivideByZero)
 	}
+	if f.Numerator == 0 {
+		return Fraction{0, 1}
+	}
+	min, max := Sort(Abs(f.Numerator), Abs(f.Denominator))
+	for remainder := max % min; remainder > 0; remainder = max % min {
+		max, min = min, remainder
+	}
+	if f.Denominator < 0 {
+		min = -min
+	}
+	return Fraction{f.Numerator / min, f.Denominator / min}
 }
 
-// String returns string of current fraction.
+// Reciprocal returns reciprocal of fraction.
+func (f Fraction) Reciprocal() Fraction {
+	return Fraction{f.Denominator, f.Numerator}
+}
+
 func (f Fraction) String() string {
-	f.validate()
 	if f.Numerator == 0 {
 		return "0"
 	}
-	f.Numerator, f.Denominator = reduce(f.Numerator, f.Denominator)
+	f = f.Reduce()
 	if f.Denominator == 1 {
-		return fmt.Sprintf("%d", f.Numerator)
+		return fmt.Sprintf("%d", f.Numerator/f.Denominator)
 	}
 	return fmt.Sprintf("%d/%d", f.Numerator, f.Denominator)
 }
 
-// IsZero returns true if this fraction is zero.
-func (f Fraction) IsZero() bool {
-	f.validate()
-	return f.Numerator == 0
-}
-
-// IsPositive returns true if this fraction is positive.
-func (f Fraction) IsPositive() bool {
-	return (f.Numerator > 0 && f.Denominator > 0) || (f.Numerator < 0 && f.Denominator < 0)
-}
-
-// IsNegative returns true if this fraction is negative.
-func (f Fraction) IsNegative() bool {
-	return (f.Numerator > 0 && f.Denominator < 0) || (f.Numerator < 0 && f.Denominator > 0)
+// Float64 returns float64 representation of fraction.
+func (f Fraction) Float64() float64 {
+	return float64(f.Numerator) / float64(f.Denominator)
 }
 
 // Add adds specified fraction to current fraction.
 func (f Fraction) Add(f1 Fraction) Fraction {
-	return NewFraction(f.Numerator*f1.Denominator+f1.Numerator*f.Denominator, f.Denominator*f1.Denominator)
+	return Fraction{f.Numerator*f1.Denominator + f1.Numerator*f.Denominator, f.Denominator * f1.Denominator}.Reduce()
 }
 
-// Sub subtracts specified fraction from current fraction.
-func (f Fraction) Sub(f1 Fraction) Fraction {
-	return NewFraction(f.Numerator*f1.Denominator-f1.Numerator*f.Denominator, f.Denominator*f1.Denominator)
+// Subtract subtracts specified fraction from current fraction.
+func (f Fraction) Subtract(f1 Fraction) Fraction {
+	return Fraction{f.Numerator*f1.Denominator - f1.Numerator*f.Denominator, f.Denominator * f1.Denominator}.Reduce()
 }
 
-// Mul multiplies two fractions.
-func (f Fraction) Mul(f1 Fraction) Fraction {
-	return NewFraction(f.Numerator*f1.Numerator, f.Denominator*f1.Denominator)
+// Multiply multiplies two fractions.
+func (f Fraction) Multiply(f1 Fraction) Fraction {
+	return Fraction{f.Numerator * f1.Numerator, f.Denominator * f1.Denominator}.Reduce()
 }
 
-// Div divides current fraction by specified fraction.
-func (f Fraction) Div(f1 Fraction) Fraction {
-	return NewFraction(f.Numerator*f1.Denominator, f.Denominator*f1.Numerator)
-}
-
-// Reciprocal returns reciprocal of current fraction.
-func (f Fraction) Reciprocal() (rcpl Fraction) {
-	rcpl = Fraction{
-		Numerator:   f.Denominator,
-		Denominator: f.Numerator,
-	}
-	rcpl.validate()
-	return
-}
-
-func reduce(numerator int, denominator int) (int, int) {
-	if denominator == 0 {
-		panic(errDivideByZero)
-	}
-	if numerator == 0 {
-		return 0, 1
-	}
-	sign := 1
-	if numerator < 0 {
-		sign = -sign
-		numerator = -numerator
-	}
-	if denominator < 0 {
-		sign = -sign
-		denominator = -denominator
-	}
-	if numerator == denominator {
-		return 1, 1
-	}
-	var max, min int
-	if numerator > denominator {
-		max, min = numerator, denominator
-	} else {
-		max, min = denominator, numerator
-	}
-	for mod := max % min; mod > 0; mod = max % min {
-		max, min = min, mod
-	}
-	return sign * numerator / min, denominator / min
+// Divide divides current fraction by specified fraction.
+func (f Fraction) Divide(f1 Fraction) Fraction {
+	return Fraction{f.Numerator * f1.Denominator, f.Denominator * f1.Numerator}.Reduce()
 }
