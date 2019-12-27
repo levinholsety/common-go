@@ -22,11 +22,8 @@ var (
 	StartupPath, _ = filepath.Abs(".")
 )
 
-// errors
-var (
-	ErrIllegalArgument = errors.New("illegal argument")
-	ErrNotFound        = errors.New("not found")
-)
+// ErrGeneral represents a general error which can be settled.
+var ErrGeneral = errors.New("general error")
 
 //Random fill random bytes in buffer.
 func Random(buf []byte) (err error) {
