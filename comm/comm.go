@@ -25,6 +25,7 @@ var (
 // errors
 var (
 	ErrIllegalArgument = errors.New("illegal argument")
+	ErrNotFound        = errors.New("not found")
 )
 
 //Random fill random bytes in buffer.
