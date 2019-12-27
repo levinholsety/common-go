@@ -1,11 +1,8 @@
 package timeutil
 
 import (
-	"fmt"
 	"regexp"
 	"time"
-
-	"github.com/levinholsety/common-go/comm"
 )
 
 var timeParserMap = map[*regexp.Regexp]string{
@@ -26,19 +23,23 @@ var localTimeParserMap = map[*regexp.Regexp]string{
 }
 
 // ParseTime parses string value to time.Time.
-func ParseTime(value string) (result time.Time, err error) {
+func ParseTime(value string) (result time.Time, ok bool) {
 	for re, layout := range localTimeParserMap {
 		if re.MatchString(value) {
+			var err error
 			result, err = time.ParseInLocation(layout, value, time.Local)
+			ok = err == nil
 			return
 		}
 	}
 	for re, layout := range timeParserMap {
 		if re.MatchString(value) {
+			var err error
 			result, err = time.Parse(layout, value)
+			ok = err == nil
 			return
 		}
 	}
-	err = fmt.Errorf("%s: %w", value, comm.ErrIllegalArgument)
+	ok = false
 	return
 }

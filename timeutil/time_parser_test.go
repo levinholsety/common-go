@@ -2,7 +2,6 @@ package timeutil_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/levinholsety/common-go/assert"
 	"github.com/levinholsety/common-go/timeutil"
@@ -24,12 +23,8 @@ func Test_ParseTime(t *testing.T) {
 }
 
 func parse(value string) string {
-	var (
-		t   time.Time
-		err error
-	)
-	if t, err = timeutil.ParseTime(value); err != nil {
-		panic(err)
+	if t, ok := timeutil.ParseTime(value); ok {
+		return t.Local().Format("2006-01-02 15:04:05")
 	}
-	return t.Local().Format("2006-01-02 15:04:05")
+	return ""
 }

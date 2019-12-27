@@ -2,18 +2,12 @@ package commio
 
 import (
 	"encoding/binary"
-	"errors"
 	"io"
 )
 
 // Delimiters.
 const (
 	DelimNull byte = 0
-)
-
-// errors.
-var (
-	ErrInvalidSize = errors.New("invalid size")
 )
 
 // NewBinaryReader creates an instance of BinaryReader.

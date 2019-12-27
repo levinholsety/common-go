@@ -1,11 +1,8 @@
 package num
 
 import (
-	"errors"
 	"fmt"
 )
-
-var errDivideByZero = errors.New("/ by zero")
 
 // Fraction represents a fraction.
 type Fraction struct {
@@ -15,11 +12,8 @@ type Fraction struct {
 
 // Reduce returns reduction of fraction.
 func (f Fraction) Reduce() Fraction {
-	if f.Denominator == 0 {
-		panic(errDivideByZero)
-	}
 	if f.Numerator == 0 {
-		return Fraction{0, 1}
+		return Fraction{0, f.Denominator / f.Denominator}
 	}
 	min, max := Sort(Abs(f.Numerator), Abs(f.Denominator))
 	for remainder := max % min; remainder > 0; remainder = max % min {

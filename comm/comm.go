@@ -2,7 +2,6 @@ package comm
 
 import (
 	"crypto/rand"
-	"errors"
 	"math/big"
 	"os"
 	"os/exec"
@@ -21,9 +20,6 @@ var (
 	//StartupPath returns the current working directory.
 	StartupPath, _ = filepath.Abs(".")
 )
-
-// ErrGeneral represents a general error which can be settled.
-var ErrGeneral = errors.New("general error")
 
 //Random fill random bytes in buffer.
 func Random(buf []byte) (err error) {
