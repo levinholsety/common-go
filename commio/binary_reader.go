@@ -36,65 +36,57 @@ func (p *BinaryReader) Read(data interface{}) (err error) {
 	return
 }
 
-// MustRead reads content into data.
-func (p *BinaryReader) MustRead(data interface{}) {
-	if err := binary.Read(p.reader, p.ByteOrder, data); err != nil {
-		panic(err)
-	}
+// ReadUInt64 reads a uint64 value.
+func (p *BinaryReader) ReadUInt64() (result uint64, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadUInt64 reads a uint64 value.
-func (p *BinaryReader) MustReadUInt64() (result uint64) {
-	p.MustRead(&result)
+// ReadInt64 reads a int64 value.
+func (p *BinaryReader) ReadInt64() (result int64, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadInt64 reads a int64 value.
-func (p *BinaryReader) MustReadInt64() (result int64) {
-	p.MustRead(&result)
+// ReadUInt32 reads a uint32 value.
+func (p *BinaryReader) ReadUInt32() (result uint32, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadUInt32 reads a uint32 value.
-func (p *BinaryReader) MustReadUInt32() (result uint32) {
-	p.MustRead(&result)
+// ReadInt32 reads a int32 value.
+func (p *BinaryReader) ReadInt32() (result int32, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadInt32 reads a int32 value.
-func (p *BinaryReader) MustReadInt32() (result int32) {
-	p.MustRead(&result)
+// ReadUInt16 reads a uint16 value.
+func (p *BinaryReader) ReadUInt16() (result uint16, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadUInt16 reads a uint16 value.
-func (p *BinaryReader) MustReadUInt16() (result uint16) {
-	p.MustRead(&result)
+// ReadInt16 reads a int16 value.
+func (p *BinaryReader) ReadInt16() (result int16, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadInt16 reads a int16 value.
-func (p *BinaryReader) MustReadInt16() (result int16) {
-	p.MustRead(&result)
+// ReadUInt8 reads a uint8 value.
+func (p *BinaryReader) ReadUInt8() (result uint8, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadUInt8 reads a uint8 value.
-func (p *BinaryReader) MustReadUInt8() (result uint8) {
-	p.MustRead(&result)
+// ReadInt8 reads a int8 value.
+func (p *BinaryReader) ReadInt8() (result int8, err error) {
+	err = p.Read(&result)
 	return
 }
 
-// MustReadInt8 reads a int8 value.
-func (p *BinaryReader) MustReadInt8() (result int8) {
-	p.MustRead(&result)
-	return
-}
-
-// MustReadByte reads a byte.
-func (p *BinaryReader) MustReadByte() (result byte) {
-	p.MustRead(&result)
+// ReadByte reads a byte.
+func (p *BinaryReader) ReadByte() (result byte, err error) {
+	err = p.Read(&result)
 	return
 }
 
@@ -105,15 +97,6 @@ func (p *BinaryReader) ReadByteArray(size int) (result []byte, err error) {
 	return
 }
 
-// MustReadByteArray reads byte array in specified size.
-func (p *BinaryReader) MustReadByteArray(size int) []byte {
-	result, err := p.ReadByteArray(size)
-	if err != nil {
-		panic(err)
-	}
-	return result
-}
-
 // ReadByteArrayUntil reads byte array until delim occurs.
 func (p *BinaryReader) ReadByteArrayUntil(delim byte) (result []byte, err error) {
 	var b byte
@@ -121,15 +104,6 @@ func (p *BinaryReader) ReadByteArrayUntil(delim byte) (result []byte, err error)
 		result = append(result, b)
 	}
 	return
-}
-
-// MustReadByteArrayUntil reads byte array until delim occurs.
-func (p *BinaryReader) MustReadByteArrayUntil(delim byte) []byte {
-	result, err := p.ReadByteArrayUntil(delim)
-	if err != nil {
-		panic(err)
-	}
-	return result
 }
 
 // ReadStringFixed reads string in specified size.
@@ -142,15 +116,6 @@ func (p *BinaryReader) ReadStringFixed(size int) (result string, err error) {
 	return
 }
 
-// MustReadStringFixed reads string in specified size.
-func (p *BinaryReader) MustReadStringFixed(size int) string {
-	result, err := p.ReadStringFixed(size)
-	if err != nil {
-		panic(err)
-	}
-	return result
-}
-
 // ReadString reads string until null character occurs.
 func (p *BinaryReader) ReadString() (result string, err error) {
 	buf, err := p.ReadByteArrayUntil(DelimNull)
@@ -159,13 +124,4 @@ func (p *BinaryReader) ReadString() (result string, err error) {
 	}
 	result = string(buf)
 	return
-}
-
-// MustReadString reads string until null character occurs.
-func (p *BinaryReader) MustReadString() string {
-	result, err := p.ReadString()
-	if err != nil {
-		panic(err)
-	}
-	return result
 }

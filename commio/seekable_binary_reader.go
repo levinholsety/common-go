@@ -23,12 +23,3 @@ type SeekableBinaryReader struct {
 func (p *SeekableBinaryReader) Seek(offset int64, whence int) (int64, error) {
 	return p.seeker.Seek(offset, whence)
 }
-
-// MustSeek seeks in internal object.
-func (p *SeekableBinaryReader) MustSeek(offset int64, whence int) int64 {
-	absOffset, err := p.Seek(offset, whence)
-	if err != nil {
-		panic(err)
-	}
-	return absOffset
-}
