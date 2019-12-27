@@ -1,9 +1,9 @@
-package comm_test
+package util_test
 
 import (
 	"testing"
 
-	"github.com/levinholsety/common-go/comm"
+	"github.com/levinholsety/common-go/util"
 )
 
 func Test_GenerateID(t *testing.T) {
@@ -14,7 +14,7 @@ func Test_GenerateID(t *testing.T) {
 	for i := 0; i < threadCount; i++ {
 		go func(index int) {
 			for i := 0; i < iterationCount; i++ {
-				ch <- comm.GenerateID()
+				ch <- util.GenerateID()
 			}
 		}(i)
 	}

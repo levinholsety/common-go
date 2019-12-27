@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/levinholsety/common-go/comm"
 )
 
 var timeParserMap = map[*regexp.Regexp]string{
@@ -37,6 +39,6 @@ func ParseTime(value string) (result time.Time, err error) {
 			return
 		}
 	}
-	err = fmt.Errorf("parse failed: %s", value)
+	err = fmt.Errorf("%s: %w", value, comm.ErrIllegalArgument)
 	return
 }
