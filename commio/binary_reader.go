@@ -14,24 +14,19 @@ const (
 // errors.
 var (
 	ErrInvalidSize = errors.New("invalid size")
-	ErrCannotSeek  = errors.New("cannot seek")
 )
 
 // NewBinaryReader creates an instance of BinaryReader.
-func NewBinaryReader(r io.Reader, order binary.ByteOrder) (br *BinaryReader) {
-	br = &BinaryReader{
+func NewBinaryReader(r io.Reader, o binary.ByteOrder) *BinaryReader {
+	return &BinaryReader{
 		reader:    r,
-		ByteOrder: order,
+		ByteOrder: o,
 	}
-	br.seeker, br.seekable = r.(io.Seeker)
-	return
 }
 
 // BinaryReader provides methods to read data.
 type BinaryReader struct {
 	reader    io.Reader
-	seeker    io.Seeker
-	seekable  bool
 	ByteOrder binary.ByteOrder
 }
 
@@ -101,50 +96,6 @@ func (p *BinaryReader) MustReadInt8() (result int8) {
 func (p *BinaryReader) MustReadByte() (result byte) {
 	p.MustRead(&result)
 	return
-}
-
-// ReadUInt reads byte array in specified size and returns uint.
-func (p *BinaryReader) ReadUInt(size int) (result uint, err error) {
-	switch size {
-	case 0:
-		result = 0
-	case 1:
-		var v uint8
-		if err = p.Read(&v); err != nil {
-			return
-		}
-		result = uint(v)
-	case 2:
-		var v uint16
-		if err = p.Read(&v); err != nil {
-			return
-		}
-		result = uint(v)
-	case 4:
-		var v uint32
-		if err = p.Read(&v); err != nil {
-			return
-		}
-		result = uint(v)
-	case 8:
-		var v uint64
-		if err = p.Read(&v); err != nil {
-			return
-		}
-		result = uint(v)
-	default:
-		err = ErrInvalidSize
-	}
-	return
-}
-
-// MustReadUInt reads byte array in specified size and returns uint.
-func (p *BinaryReader) MustReadUInt(size int) uint {
-	result, err := p.ReadUInt(size)
-	if err != nil {
-		panic(err)
-	}
-	return result
 }
 
 // ReadByteArray reads byte array in specified size.
@@ -217,22 +168,4 @@ func (p *BinaryReader) MustReadString() string {
 		panic(err)
 	}
 	return result
-}
-
-// Seek seeks in internal object.
-func (p *BinaryReader) Seek(offset int64, whence int) (absOffset int64, err error) {
-	if !p.seekable {
-		err = ErrCannotSeek
-		return
-	}
-	return p.seeker.Seek(offset, whence)
-}
-
-// MustSeek seeks in internal object.
-func (p *BinaryReader) MustSeek(offset int64, whence int) int64 {
-	absOffset, err := p.Seek(offset, whence)
-	if err != nil {
-		panic(err)
-	}
-	return absOffset
 }
