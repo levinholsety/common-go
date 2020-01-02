@@ -46,3 +46,17 @@ func CopyFile(dst, src string) (n int64, err error) {
 	})
 	return
 }
+
+// Stat returns a FileInfo describing the named file.
+func Stat(name string) (fileInfo os.FileInfo, existed bool, err error) {
+	fileInfo, err = os.Stat(name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			existed = false
+			err = nil
+		}
+		return
+	}
+	existed = true
+	return
+}
