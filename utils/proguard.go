@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/levinholsety/common-go/comm"
-	"github.com/levinholsety/common-go/commio"
-	"github.com/levinholsety/common-go/util"
 )
 
 // ProGuard provides functions of ProGuard
@@ -42,7 +40,7 @@ func (p *ProGuard) Pack(inJars []string, libJars []string, outJar string) (err e
 			return
 		}
 		defer file.Close()
-		tw := commio.NewTextWriter(file)
+		tw := NewTextWriter(file)
 		for _, inJar := range inJars {
 			tw.WriteLine("-injars " + inJar)
 		}
@@ -77,7 +75,7 @@ func (p *ProGuard) Pack(inJars []string, libJars []string, outJar string) (err e
 		tw.WriteLine("    java.lang.Object readResolve();")
 		tw.WriteLine("}")
 	}()
-	err = util.NewCommand(p.proguardPath).Execute("@" + filePath)
+	err = NewCommand(p.proguardPath).Execute("@" + filePath)
 	if err != nil {
 		return
 	}

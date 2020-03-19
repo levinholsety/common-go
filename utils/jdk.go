@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"github.com/levinholsety/common-go/comm"
-	"github.com/levinholsety/common-go/commio"
-	"github.com/levinholsety/common-go/util"
 )
 
 // JDK provides functions of JDK.
@@ -50,12 +48,12 @@ func (p *JDK) getBinaryFilePath(name string) string {
 
 // JavaVersion prints java version.
 func (p *JDK) JavaVersion() error {
-	return util.NewCommand(p.javaPath).Execute("-version")
+	return NewCommand(p.javaPath).Execute("-version")
 }
 
 // JavacVersion prints javac version.
 func (p *JDK) JavacVersion() error {
-	return util.NewCommand(p.javacPath).Execute("-version")
+	return NewCommand(p.javacPath).Execute("-version")
 }
 
 // JavaC invokes javac command.
@@ -114,7 +112,7 @@ func (p *JDK) javac(dir string, binDir string, args []string) error {
 					if err != nil {
 						return err
 					}
-					_, err = commio.CopyFile(srcPath, binDir)
+					_, err = comm.CopyFile(srcPath, binDir)
 					if err != nil {
 						return err
 					}
@@ -125,7 +123,7 @@ func (p *JDK) javac(dir string, binDir string, args []string) error {
 	if compile {
 		path := filepath.Join(dir, "*.java")
 		fmt.Printf("Compiling %s\n", path)
-		return util.NewCommand(p.javacPath).Execute(append(args, path)...)
+		return NewCommand(p.javacPath).Execute(append(args, path)...)
 	}
 	return nil
 }
@@ -146,7 +144,7 @@ func (p *JDK) Jar(dir string, jarFile string, overwrite bool) error {
 	args = append(args, "-C")
 	args = append(args, dir)
 	args = append(args, ".")
-	return util.NewCommand(p.jarPath).Execute(args...)
+	return NewCommand(p.jarPath).Execute(args...)
 }
 
 // JavaDoc invokes javadoc command.
@@ -181,5 +179,5 @@ func (p *JDK) JavaDoc(sourcePaths []string, classPaths []string, packageName str
 	args = append(args, "UTF-8")
 	args = append(args, "-docencoding")
 	args = append(args, "UTF-8")
-	return util.NewCommand(p.javadocPath).Execute(args...)
+	return NewCommand(p.javadocPath).Execute(args...)
 }
