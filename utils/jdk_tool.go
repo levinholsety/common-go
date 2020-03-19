@@ -1,4 +1,4 @@
-package tools
+package utils
 
 import (
 	"fmt"
@@ -9,10 +9,11 @@ import (
 
 	"github.com/levinholsety/common-go/comm"
 	"github.com/levinholsety/common-go/commio"
+	"github.com/levinholsety/common-go/util"
 )
 
-// JDKTool provides functions of JDK.
-type JDKTool struct {
+// JDK provides functions of JDK.
+type JDK struct {
 	javaHome    string
 	javaPath    string
 	javacPath   string
@@ -27,9 +28,9 @@ const (
 	javadoc = "javadoc"
 )
 
-// NewJDKTool creates a JDKTool instance.
-func NewJDKTool(javaHome string) *JDKTool {
-	jdk := JDKTool{javaHome: javaHome}
+// NewJDK creates a JDK instance.
+func NewJDK(javaHome string) *JDK {
+	jdk := JDK{javaHome: javaHome}
 	jdk.javaPath = jdk.getBinaryFilePath(java)
 	jdk.javacPath = jdk.getBinaryFilePath(javac)
 	jdk.javadocPath = jdk.getBinaryFilePath(javadoc)
@@ -37,28 +38,28 @@ func NewJDKTool(javaHome string) *JDKTool {
 	return &jdk
 }
 
-func (jdk *JDKTool) getBinaryFilePath(name string) string {
+func (p *JDK) getBinaryFilePath(name string) string {
 	if comm.IsWindows {
 		name += ".exe"
 	}
-	if len(jdk.javaHome) > 0 {
-		name = filepath.Join(jdk.javaHome, "bin", name)
+	if len(p.javaHome) > 0 {
+		name = filepath.Join(p.javaHome, "bin", name)
 	}
 	return name
 }
 
 // JavaVersion prints java version.
-func (jdk *JDKTool) JavaVersion() error {
-	return comm.NewCommand(jdk.javaPath).Execute("-version")
+func (p *JDK) JavaVersion() error {
+	return util.NewCommand(p.javaPath).Execute("-version")
 }
 
 // JavacVersion prints javac version.
-func (jdk *JDKTool) JavacVersion() error {
-	return comm.NewCommand(jdk.javacPath).Execute("-version")
+func (p *JDK) JavacVersion() error {
+	return util.NewCommand(p.javacPath).Execute("-version")
 }
 
 // JavaC invokes javac command.
-func (jdk *JDKTool) JavaC(sourcePath string, classPaths []string, binDir string, javaVersion string) error {
+func (p *JDK) JavaC(sourcePath string, classPaths []string, binDir string, javaVersion string) error {
 	var args []string
 	args = append(args, "-J-Dfile.encoding=UTF-8")
 	args = append(args, "-J-Duser.language=en_US")
@@ -78,10 +79,10 @@ func (jdk *JDKTool) JavaC(sourcePath string, classPaths []string, binDir string,
 	args = append(args, javaVersion)
 	args = append(args, "-target")
 	args = append(args, javaVersion)
-	return jdk.javac(sourcePath, binDir, args)
+	return p.javac(sourcePath, binDir, args)
 }
 
-func (jdk *JDKTool) javac(dir string, binDir string, args []string) error {
+func (p *JDK) javac(dir string, binDir string, args []string) error {
 	infos, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return err
@@ -92,7 +93,7 @@ func (jdk *JDKTool) javac(dir string, binDir string, args []string) error {
 		srcPath := filepath.Join(dir, name)
 		destPath := filepath.Join(binDir, name)
 		if info.IsDir() {
-			err = jdk.javac(srcPath, destPath, args)
+			err = p.javac(srcPath, destPath, args)
 			if err != nil {
 				return err
 			}
@@ -124,13 +125,13 @@ func (jdk *JDKTool) javac(dir string, binDir string, args []string) error {
 	if compile {
 		path := filepath.Join(dir, "*.java")
 		fmt.Printf("Compiling %s\n", path)
-		return comm.NewCommand(jdk.javacPath).Execute(append(args, path)...)
+		return util.NewCommand(p.javacPath).Execute(append(args, path)...)
 	}
 	return nil
 }
 
 // Jar invokes jar command.
-func (jdk *JDKTool) Jar(dir string, jarFile string, overwrite bool) error {
+func (p *JDK) Jar(dir string, jarFile string, overwrite bool) error {
 	d, _ := filepath.Split(jarFile)
 	os.MkdirAll(d, os.ModePerm)
 	var args []string
@@ -145,11 +146,11 @@ func (jdk *JDKTool) Jar(dir string, jarFile string, overwrite bool) error {
 	args = append(args, "-C")
 	args = append(args, dir)
 	args = append(args, ".")
-	return comm.NewCommand(jdk.jarPath).Execute(args...)
+	return util.NewCommand(p.jarPath).Execute(args...)
 }
 
 // JavaDoc invokes javadoc command.
-func (jdk *JDKTool) JavaDoc(sourcePaths []string, classPaths []string, packageName string, version string, docPath string, windowTitle string) error {
+func (p *JDK) JavaDoc(sourcePaths []string, classPaths []string, packageName string, version string, docPath string, windowTitle string) error {
 	var args []string
 	args = append(args, "-J-Dfile.encoding=UTF-8")
 	args = append(args, "-J-Duser.language=en_US")
@@ -180,5 +181,5 @@ func (jdk *JDKTool) JavaDoc(sourcePaths []string, classPaths []string, packageNa
 	args = append(args, "UTF-8")
 	args = append(args, "-docencoding")
 	args = append(args, "UTF-8")
-	return comm.NewCommand(jdk.javadocPath).Execute(args...)
+	return util.NewCommand(p.javadocPath).Execute(args...)
 }

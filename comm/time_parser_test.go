@@ -1,10 +1,10 @@
-package timeutil_test
+package comm_test
 
 import (
 	"testing"
 
 	"github.com/levinholsety/common-go/assert"
-	"github.com/levinholsety/common-go/timeutil"
+	"github.com/levinholsety/common-go/comm"
 )
 
 func Test_ParseTime(t *testing.T) {
@@ -23,7 +23,7 @@ func Test_ParseTime(t *testing.T) {
 }
 
 func parse(value string) string {
-	if t, ok := timeutil.ParseTime(value); ok {
+	if t, ok := comm.ParseTime(value); ok {
 		return t.Local().Format("2006-01-02 15:04:05")
 	}
 	return ""

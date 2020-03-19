@@ -9,7 +9,6 @@ import (
 
 	"github.com/levinholsety/common-go/assert"
 	"github.com/levinholsety/common-go/comm"
-	"github.com/levinholsety/common-go/commio"
 	"github.com/levinholsety/common-go/crypto/aes"
 	"github.com/levinholsety/common-go/crypto/cipher"
 	"github.com/levinholsety/common-go/crypto/paddings"
@@ -53,9 +52,9 @@ func Test_AES_ECB_EncryptAndDecryptStream(t *testing.T) {
 	for _, data := range dataArray {
 		err := ioutil.WriteFile(path1, data, 0644)
 		assert.NoError(t, err)
-		_, err = commio.Transform(newEncryptor(key, nil), path2, path1)
+		_, err = comm.Transform(path2, path1, newEncryptor(key, nil))
 		assert.NoError(t, err)
-		_, err = commio.Transform(newDecryptor(key, nil), path3, path2)
+		_, err = comm.Transform(path3, path2, newDecryptor(key, nil))
 		assert.NoError(t, err)
 		decrypted, err := ioutil.ReadFile(path3)
 		assert.NoError(t, err)
@@ -83,9 +82,9 @@ func Test_AES_CBC_EncryptAndDecryptStream(t *testing.T) {
 	for _, data := range dataArray {
 		err := ioutil.WriteFile(path1, data, 0644)
 		assert.NoError(t, err)
-		commio.Transform(newEncryptor(key, iv), path2, path1)
+		comm.Transform(path2, path1, newEncryptor(key, iv))
 		assert.NoError(t, err)
-		commio.Transform(newDecryptor(key, iv), path3, path2)
+		comm.Transform(path3, path2, newDecryptor(key, iv))
 		assert.NoError(t, err)
 		decrypted, err := ioutil.ReadFile(path3)
 		assert.NoError(t, err)
@@ -125,7 +124,7 @@ func Benchmark_AES_ECB_EncryptStream(b *testing.B) {
 	dstPath := filepath.Join(os.TempDir(), "aes_cbc_encrypt_dst")
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		commio.Transform(newEncryptor(key, nil), dstPath, srcPath)
+		comm.Transform(dstPath, srcPath, newEncryptor(key, nil))
 	}
 }
 
@@ -137,7 +136,7 @@ func Benchmark_AES_ECB_DecryptStream(b *testing.B) {
 	dstPath := filepath.Join(os.TempDir(), "aes_cbc_decrypt_dst")
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		commio.Transform(newDecryptor(key, nil), dstPath, srcPath)
+		comm.Transform(dstPath, srcPath, newDecryptor(key, nil))
 	}
 }
 
@@ -149,7 +148,7 @@ func Benchmark_AES_CBC_EncryptStream(b *testing.B) {
 	dstPath := filepath.Join(os.TempDir(), "aes_cbc_encrypt_dst")
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		commio.Transform(newEncryptor(key, iv), dstPath, srcPath)
+		comm.Transform(dstPath, srcPath, newEncryptor(key, iv))
 	}
 }
 
@@ -161,7 +160,7 @@ func Benchmark_AES_CBC_DecryptStream(b *testing.B) {
 	dstPath := filepath.Join(os.TempDir(), "aes_cbc_decrypt_dst")
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		commio.Transform(newDecryptor(key, iv), dstPath, srcPath)
+		comm.Transform(dstPath, srcPath, newDecryptor(key, iv))
 	}
 }
 

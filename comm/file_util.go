@@ -1,4 +1,4 @@
-package commio
+package comm
 
 import (
 	"io"
@@ -26,9 +26,9 @@ func OpenWrite(filename string, onOpen func(file *os.File) error) error {
 }
 
 // Transform copies a file to another place and performs specified transformation.
-func Transform(transform func(w io.Writer, r io.Reader) (int64, error), dst string, src string) (n int64, err error) {
-	err = OpenRead(src, func(srcFile *os.File) error {
-		return OpenWrite(dst, func(dstFile *os.File) (err error) {
+func Transform(dstFileName string, srcFileName string, transform func(w io.Writer, r io.Reader) (int64, error)) (n int64, err error) {
+	err = OpenRead(srcFileName, func(srcFile *os.File) error {
+		return OpenWrite(dstFileName, func(dstFile *os.File) (err error) {
 			n, err = transform(dstFile, srcFile)
 			return
 		})
@@ -37,9 +37,9 @@ func Transform(transform func(w io.Writer, r io.Reader) (int64, error), dst stri
 }
 
 // CopyFile copies a file to another place.
-func CopyFile(dst, src string) (n int64, err error) {
-	err = OpenRead(src, func(srcFile *os.File) error {
-		return OpenWrite(dst, func(dstFile *os.File) (err error) {
+func CopyFile(dstFileName, srcFileName string) (n int64, err error) {
+	err = OpenRead(srcFileName, func(srcFile *os.File) error {
+		return OpenWrite(dstFileName, func(dstFile *os.File) (err error) {
 			n, err = io.Copy(dstFile, srcFile)
 			return
 		})
@@ -48,15 +48,13 @@ func CopyFile(dst, src string) (n int64, err error) {
 }
 
 // Stat returns a FileInfo describing the named file.
-func Stat(name string) (fileInfo os.FileInfo, existed bool, err error) {
-	fileInfo, err = os.Stat(name)
+func Stat(name string) (os.FileInfo, error) {
+	fileInfo, err := os.Stat(name)
 	if err != nil {
 		if os.IsNotExist(err) {
-			existed = false
-			err = nil
+			return nil, nil
 		}
-		return
+		return nil, err
 	}
-	existed = true
-	return
+	return fileInfo, nil
 }

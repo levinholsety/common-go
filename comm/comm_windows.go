@@ -1,7 +1,8 @@
 package comm
 
-// System constants.
 const (
-	IsWindows     = true
+	// IsWindows represents whether current os is windows.
+	IsWindows = true
+	// LineSeparator represents line separator of current os.
 	LineSeparator = "\r\n"
 )

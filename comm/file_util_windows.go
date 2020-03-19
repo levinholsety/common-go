@@ -1,4 +1,4 @@
-package commio
+package comm
 
 import "bytes"
 

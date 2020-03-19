@@ -1,50 +1,20 @@
-package comm
+package utils
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 )
 
-// ExecutePiplineCommands executes commands in pipline mode.
-func ExecutePiplineCommands(output io.Writer, commands ...*exec.Cmd) (err error) {
-	if len(commands) > 0 {
-		src := commands[0]
-		for _, dst := range commands[1:] {
-			dst.Stdin, src.Stdout = io.Pipe()
-			src = dst
-		}
-		src.Stdout = output
-		for _, cmd := range commands {
-			if err = cmd.Start(); err != nil {
-				return
-			}
-		}
-		for _, cmd := range commands {
-			if err = cmd.Wait(); err != nil {
-				return
-			}
-			if obj, ok := cmd.Stdin.(io.Closer); ok {
-				obj.Close()
-			}
-			if obj, ok := cmd.Stdout.(io.Closer); ok {
-				obj.Close()
-			}
-		}
-	}
-	return nil
+// NewCommand creates a Command.
+func NewCommand(path string) *Command {
+	return (&Command{Path: path}).ResetEnvVars()
 }
 
 // Command provides functions to execute command.
 type Command struct {
 	Path                 string
 	EnvironmentVariables []string
-}
-
-// NewCommand creates a Command.
-func NewCommand(path string) *Command {
-	return (&Command{Path: path}).ResetEnvVars()
 }
 
 // AddEnvVar adds a environment variable to current command.

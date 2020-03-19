@@ -1,4 +1,4 @@
-package tools
+package utils
 
 import (
 	"os"
@@ -6,17 +6,18 @@ import (
 
 	"github.com/levinholsety/common-go/comm"
 	"github.com/levinholsety/common-go/commio"
+	"github.com/levinholsety/common-go/util"
 )
 
-// ProGuardTool provides functions of ProGuard
-type ProGuardTool struct {
+// ProGuard provides functions of ProGuard
+type ProGuard struct {
 	home         string
 	proguardPath string
 }
 
-// NewProGuardTool creates a ProGuardTool instance.
-func NewProGuardTool(home string) *ProGuardTool {
-	tool := ProGuardTool{home: home, proguardPath: proguard}
+// NewProGuard creates a ProGuard instance.
+func NewProGuard(home string) *ProGuard {
+	tool := ProGuard{home: home, proguardPath: proguard}
 	if comm.IsWindows {
 		tool.proguardPath += ".bat"
 	} else {
@@ -33,7 +34,7 @@ const (
 )
 
 // Pack packs contents.
-func (tool *ProGuardTool) Pack(inJars []string, libJars []string, outJar string) (err error) {
+func (p *ProGuard) Pack(inJars []string, libJars []string, outJar string) (err error) {
 	filePath := outJar + ".pro"
 	func() {
 		file, err := os.Create(filePath)
@@ -76,7 +77,7 @@ func (tool *ProGuardTool) Pack(inJars []string, libJars []string, outJar string)
 		tw.WriteLine("    java.lang.Object readResolve();")
 		tw.WriteLine("}")
 	}()
-	err = comm.NewCommand(tool.proguardPath).Execute("@" + filePath)
+	err = util.NewCommand(p.proguardPath).Execute("@" + filePath)
 	if err != nil {
 		return
 	}

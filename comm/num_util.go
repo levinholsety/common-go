@@ -1,4 +1,4 @@
-package num
+package comm
 
 // Abs returns absolute value of an integer.
 func Abs(v int) int {

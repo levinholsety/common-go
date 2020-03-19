@@ -1,14 +1,18 @@
-package timeutil
+package comm
 
 import (
 	"fmt"
 	"time"
 )
 
-//CurrentTimeMillis returns current time in milliseconds from 1970-01-01 00:00:00 UTC.
+// TimeMillis returns unix timestamp in milliseconds of specified time.
+func TimeMillis(t time.Time) int64 {
+	return t.Unix()*1000 + int64(t.Nanosecond())/time.Millisecond.Nanoseconds()
+}
+
+// CurrentTimeMillis returns current unix timestamp in milliseconds.
 func CurrentTimeMillis() int64 {
-	now := time.Now()
-	return now.Unix()*1000 + int64(now.Nanosecond())/time.Millisecond.Nanoseconds()
+	return TimeMillis(time.Now())
 }
 
 // FormatDuration formats time duration.
