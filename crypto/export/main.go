@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/levinholsety/common-go/commio"
+	"github.com/levinholsety/common-go/comm"
 	"github.com/levinholsety/common-go/crypto/aes"
 	"github.com/levinholsety/common-go/crypto/rsa"
 )
@@ -39,8 +39,8 @@ func newCString(value string) *cchar {
 }
 
 func digest(filename string, h hash.Hash) string {
-	if err := commio.OpenRead(filename, func(file *os.File) error {
-		return commio.ReadBlocks(file, 0x10000, func(block []byte) (err error) {
+	if err := comm.OpenRead(filename, func(file *os.File) error {
+		return comm.ReadBlocks(file, 0x10000, func(block []byte) (err error) {
 			_, err = h.Write(block)
 			return
 		})
