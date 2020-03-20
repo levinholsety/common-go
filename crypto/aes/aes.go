@@ -6,13 +6,12 @@ import (
 	"crypto/cipher"
 	"io"
 
-	c "github.com/levinholsety/common-go/crypto/cipher"
-	"github.com/levinholsety/common-go/crypto/paddings"
+	"github.com/levinholsety/common-go/crypto"
 )
 
 func encrypt(b cipher.Block, src []byte) (dst []byte, err error) {
 	w := bytes.NewBuffer(make([]byte, 0, len(src)))
-	cw := c.NewCipherWriter(w, b, paddings.PKCS7)
+	cw := crypto.NewCipherWriter(w, b, new(crypto.PKCS7Padding))
 	r := bytes.NewReader(src)
 	if _, err = io.Copy(cw, r); err != nil {
 		return
@@ -26,7 +25,7 @@ func encrypt(b cipher.Block, src []byte) (dst []byte, err error) {
 
 func decrypt(b cipher.Block, src []byte) (dst []byte, err error) {
 	w := bytes.NewBuffer(make([]byte, 0, len(src)))
-	r, err := c.NewCipherReader(bytes.NewReader(src), b, paddings.PKCS7)
+	r, err := crypto.NewCipherReader(bytes.NewReader(src), b, new(crypto.PKCS7Padding))
 	if err != nil {
 		return
 	}
@@ -58,7 +57,7 @@ func EncryptCBC(src, key, iv []byte) (dst []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return encrypt(c.NewCBC(b, iv), src)
+	return encrypt(crypto.NewCBC(b, iv), src)
 }
 
 func DecryptCBC(src, key, iv []byte) ([]byte, error) {
@@ -66,7 +65,7 @@ func DecryptCBC(src, key, iv []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return decrypt(c.NewCBC(b, iv), src)
+	return decrypt(crypto.NewCBC(b, iv), src)
 }
 
 func NewECB(key []byte) (cipher.Block, error) {

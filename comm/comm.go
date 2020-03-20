@@ -1,3 +1,4 @@
+// Package comm provides common methods.
 package comm
 
 import (

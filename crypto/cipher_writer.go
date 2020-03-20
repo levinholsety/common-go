@@ -1,13 +1,11 @@
-package cipher
+package crypto
 
 import (
 	"crypto/cipher"
 	"io"
-
-	"github.com/levinholsety/common-go/crypto"
 )
 
-func NewCipherWriter(w io.Writer, b cipher.Block, padding crypto.Padding) io.WriteCloser {
+func NewCipherWriter(w io.Writer, b cipher.Block, padding Padding) io.WriteCloser {
 	blockSize := b.BlockSize()
 	return &cipherWriter{
 		writer:       w,
@@ -23,7 +21,7 @@ func NewCipherWriter(w io.Writer, b cipher.Block, padding crypto.Padding) io.Wri
 type cipherWriter struct {
 	writer       io.Writer
 	block        cipher.Block
-	padding      crypto.Padding
+	padding      Padding
 	blockSize    int
 	buffer       []byte
 	bufferLength int

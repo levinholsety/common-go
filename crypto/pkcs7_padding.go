@@ -1,10 +1,8 @@
-package paddings
+package crypto
 
 import (
 	"bytes"
 	"errors"
-
-	"github.com/levinholsety/common-go/crypto"
 )
 
 var (
@@ -12,12 +10,13 @@ var (
 	errBadPadding       = errors.New("bad padding")
 )
 
-type pkcs7Padding struct{}
+// PKCS7Padding represents PKCS #7 padding.
+type PKCS7Padding struct{}
 
-var _ crypto.Padding = new(pkcs7Padding)
+var _ Padding = new(PKCS7Padding)
 
 // AddPadding adds padding to last block and returns it.
-func (p *pkcs7Padding) AddPadding(src []byte, blockSize int) (dst []byte) {
+func (p *PKCS7Padding) AddPadding(src []byte, blockSize int) (dst []byte) {
 	dataLength := len(src)
 	paddingLength := blockSize - dataLength%blockSize
 	padding := bytes.Repeat([]byte{byte(paddingLength)}, paddingLength)
@@ -28,7 +27,7 @@ func (p *pkcs7Padding) AddPadding(src []byte, blockSize int) (dst []byte) {
 }
 
 // RemovePadding removes padding from data.
-func (p *pkcs7Padding) RemovePadding(src []byte, blockSize int) (dataLength int, err error) {
+func (p *PKCS7Padding) RemovePadding(src []byte, blockSize int) (dataLength int, err error) {
 	encDataLength := len(src)
 	if encDataLength < blockSize || encDataLength%blockSize != 0 {
 		err = errIllegalBlockSize

@@ -1,14 +1,12 @@
-package cipher
+package crypto
 
 import (
 	"bufio"
 	"crypto/cipher"
 	"io"
-
-	"github.com/levinholsety/common-go/crypto"
 )
 
-func NewCipherReader(r io.Reader, b cipher.Block, padding crypto.Padding) (p io.Reader, err error) {
+func NewCipherReader(r io.Reader, b cipher.Block, padding Padding) (p io.Reader, err error) {
 	br, err := newBlockReader(r, b, padding)
 	if err != nil {
 		return
@@ -20,14 +18,14 @@ func NewCipherReader(r io.Reader, b cipher.Block, padding crypto.Padding) (p io.
 type blockReader struct {
 	reader    io.Reader
 	block     cipher.Block
-	padding   crypto.Padding
+	padding   Padding
 	blockSize int
 	buffer    []byte
 }
 
 var _ io.Reader = new(blockReader)
 
-func newBlockReader(r io.Reader, b cipher.Block, padding crypto.Padding) (p *blockReader, err error) {
+func newBlockReader(r io.Reader, b cipher.Block, padding Padding) (p *blockReader, err error) {
 	blockSize := b.BlockSize()
 	p = &blockReader{
 		reader:    r,

@@ -9,9 +9,8 @@ import (
 
 	"github.com/levinholsety/common-go/assert"
 	"github.com/levinholsety/common-go/comm"
+	"github.com/levinholsety/common-go/crypto"
 	"github.com/levinholsety/common-go/crypto/aes"
-	"github.com/levinholsety/common-go/crypto/cipher"
-	"github.com/levinholsety/common-go/crypto/paddings"
 )
 
 var (
@@ -180,9 +179,9 @@ func newEncryptor(key, iv []byte) func(w io.Writer, r io.Reader) (n int64, err e
 func (p *encryptor) transform(w io.Writer, r io.Reader) (n int64, err error) {
 	b, err := aes.NewECB(key)
 	if iv != nil {
-		b = cipher.NewCBC(b, iv)
+		b = crypto.NewCBC(b, iv)
 	}
-	cw := cipher.NewCipherWriter(w, b, paddings.PKCS7)
+	cw := crypto.NewCipherWriter(w, b, new(crypto.PKCS7Padding))
 	if n, err = io.Copy(cw, r); err != nil {
 		return
 	}
@@ -206,9 +205,9 @@ func newDecryptor(key, iv []byte) func(w io.Writer, r io.Reader) (n int64, err e
 func (p *decryptor) transform(w io.Writer, r io.Reader) (n int64, err error) {
 	b, err := aes.NewECB(key)
 	if iv != nil {
-		b = cipher.NewCBC(b, iv)
+		b = crypto.NewCBC(b, iv)
 	}
-	cr, err := cipher.NewCipherReader(r, b, paddings.PKCS7)
+	cr, err := crypto.NewCipherReader(r, b, new(crypto.PKCS7Padding))
 	if err != nil {
 		return
 	}
