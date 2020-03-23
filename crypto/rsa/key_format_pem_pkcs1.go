@@ -25,6 +25,7 @@ func (f *pemPKCS1FormatPrivateKey) EncodePrivateKey(key *rsa.PrivateKey) []byte 
 func (f *pemPKCS1FormatPrivateKey) DecodePrivateKey(pemData []byte) (*rsa.PrivateKey, error) {
 	return f.DecodeEncryptedPrivateKey(pemData, nil)
 }
+
 func (f *pemPKCS1FormatPrivateKey) DecodeEncryptedPrivateKey(pemData, password []byte) (privateKey *rsa.PrivateKey, err error) {
 	block, _ := pem.Decode(pemData)
 	if block.Type != "RSA PRIVATE KEY" {
@@ -52,8 +53,8 @@ func (f *pemPKCS1FormatPrivateKey) DecodeEncryptedPrivateKey(pemData, password [
 						password = []byte(scanner.Text())
 					}
 				}
-				aes.NewKey(password, salt, md5.New(), key)
-				data, err = aes.DecryptCBC(block.Bytes, key, iv)
+				aes.GenerateKey(password, salt, md5.New(), key)
+				data, err = aes.DecryptByteArray(key, iv, block.Bytes)
 			} else {
 				err = fmt.Errorf("unsupported DEK-Info: %s", v)
 				return

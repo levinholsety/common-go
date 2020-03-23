@@ -6,18 +6,18 @@ import (
 	"github.com/levinholsety/common-go/comm"
 )
 
-// GenerateKey generates a 256 bits AES key.
-func GenerateKey() ([]byte, error) {
+// NewKey creates a 256 bits AES key.
+func NewKey() ([]byte, error) {
 	return comm.RandomBytes(32)
 }
 
-// GenerateIV generates a IV.
-func GenerateIV() ([]byte, error) {
+// NewIV creates a IV.
+func NewIV() ([]byte, error) {
 	return comm.RandomBytes(16)
 }
 
-// NewKey creates key from password.
-func NewKey(password, salt []byte, alg hash.Hash, key []byte) {
+// GenerateKey generates key from password.
+func GenerateKey(password, salt []byte, alg hash.Hash, key []byte) {
 	keySize := len(key)
 	for i := 0; i < keySize; i += alg.Size() {
 		alg.Reset()

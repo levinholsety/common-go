@@ -4,26 +4,30 @@ package assert
 import (
 	"bytes"
 	"encoding/hex"
+	"runtime/debug"
 	"testing"
 )
 
 // NoError asserts err is nil.
 func NoError(tb testing.TB, err error) {
 	if err != nil {
-		tb.Errorf("Assert failed: %w", err)
+		tb.Fatalf("Assert failed: %v\n%s\n", err, debug.Stack())
 	}
 }
 
 // StringEqual asserts expected string equals actural string.
 func StringEqual(tb testing.TB, expected, actrual string) {
 	if expected != actrual {
-		tb.Errorf("Assert failed:\nexpected: %s\nactrual: %s\n", expected, actrual)
+		tb.Fatalf("Assert failed:\nexpected: %s\n actrual: %s\n%s\n", expected, actrual, debug.Stack())
 	}
 }
 
 // ByteArrayEqual asserts expected byte array equals actual byte array.
 func ByteArrayEqual(tb testing.TB, expected, actrual []byte) {
 	if !bytes.Equal(expected, actrual) {
-		tb.Errorf("Assert failed:\nexpected: %s\nactrual: %s\n", hex.EncodeToString(expected), hex.EncodeToString(actrual))
+		tb.Fatalf("Assert failed:\nexpected: (%d)%s\n actrual: (%d)%s\n%s\n",
+			len(expected), hex.EncodeToString(expected),
+			len(actrual), hex.EncodeToString(actrual),
+			debug.Stack())
 	}
 }

@@ -1,7 +1,6 @@
 package aes
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"io"
@@ -9,65 +8,46 @@ import (
 	"github.com/levinholsety/common-go/crypto"
 )
 
-func encrypt(b cipher.Block, src []byte) (dst []byte, err error) {
-	w := bytes.NewBuffer(make([]byte, 0, len(src)))
-	cw := crypto.NewCipherWriter(w, b, new(crypto.PKCS7Padding))
-	r := bytes.NewReader(src)
-	if _, err = io.Copy(cw, r); err != nil {
+func newBlock(key, iv []byte) (b cipher.Block, err error) {
+	if b, err = aes.NewCipher(key); err != nil {
 		return
 	}
-	if err = cw.Close(); err != nil {
-		return
-	}
-	dst = w.Bytes()
+	b = crypto.NewCBC(b, iv)
 	return
 }
 
-func decrypt(b cipher.Block, src []byte) (dst []byte, err error) {
-	w := bytes.NewBuffer(make([]byte, 0, len(src)))
-	r, err := crypto.NewCipherReader(bytes.NewReader(src), b, new(crypto.PKCS7Padding))
+// Encrypt encrypts data from io.Reader to io.Writer with AES CBC algorithm.
+func Encrypt(key, iv []byte, w io.Writer, r io.Reader) (err error) {
+	b, err := newBlock(key, iv)
 	if err != nil {
 		return
 	}
-	if _, err = io.Copy(w, r); err != nil {
+	return crypto.Encrypt(b, new(crypto.PKCS7Padding), w, r)
+}
+
+// EncryptByteArray encrypts data with AES CBC algorithm.
+func EncryptByteArray(key, iv, data []byte) (result []byte, err error) {
+	b, err := newBlock(key, iv)
+	if err != nil {
 		return
 	}
-	dst = w.Bytes()
-	return
+	return crypto.EncryptByteArray(b, new(crypto.PKCS7Padding), data)
 }
 
-func Encrypt(src, key []byte) ([]byte, error) {
-	b, err := aes.NewCipher(key)
+// Decrypt decrypts data from io.Reader to io.Writer with AES CBC algorithm.
+func Decrypt(key, iv []byte, w io.Writer, r io.Reader) (err error) {
+	b, err := newBlock(key, iv)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return encrypt(b, src)
+	return crypto.Decrypt(b, new(crypto.PKCS7Padding), w, r)
 }
 
-func Decrypt(src, key []byte) ([]byte, error) {
-	b, err := aes.NewCipher(key)
+// DecryptByteArray decrypts data with AES CBC algorithm.
+func DecryptByteArray(key, iv, data []byte) (result []byte, err error) {
+	b, err := newBlock(key, iv)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return decrypt(b, src)
-}
-
-func EncryptCBC(src, key, iv []byte) (dst []byte, err error) {
-	b, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	return encrypt(crypto.NewCBC(b, iv), src)
-}
-
-func DecryptCBC(src, key, iv []byte) ([]byte, error) {
-	b, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	return decrypt(crypto.NewCBC(b, iv), src)
-}
-
-func NewECB(key []byte) (cipher.Block, error) {
-	return aes.NewCipher(key)
+	return crypto.DecryptByteArray(b, new(crypto.PKCS7Padding), data)
 }

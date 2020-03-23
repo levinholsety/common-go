@@ -1,4 +1,4 @@
-package crypto_test
+package rsa_test
 
 import (
 	"testing"

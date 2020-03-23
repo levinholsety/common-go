@@ -46,7 +46,7 @@ func UniqueID() int64 {
 
 //Random fill random bytes in buffer.
 func Random(buf []byte) (err error) {
-	_, err = rand.Read(buf)
+	_, err = io.ReadFull(rand.Reader, buf)
 	return
 }
 
