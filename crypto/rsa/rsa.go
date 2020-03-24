@@ -1,61 +1,29 @@
+// Package rsa implements RSA encryption and decryption algorithm.
 package rsa
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
+	"io"
+
+	"github.com/levinholsety/common-go/crypto"
 )
 
-//Encrypt encrypts data with RSA algorithm.
-func Encrypt(data []byte, publicKey *rsa.PublicKey) (encryptedData []byte, err error) {
-	keySize := publicKey.N.BitLen() / 8
-	blockSize := keySize - 11
-	encryptedData = make([]byte, computeEncryptedDataSize(len(data), blockSize, keySize))
-	buf := encryptedData
-	var encryptedBlock []byte
-	for len(data) >= blockSize {
-		encryptedBlock, err = rsa.EncryptPKCS1v15(rand.Reader, publicKey, data[:blockSize])
-		if err != nil {
-			return
-		}
-		copy(buf, encryptedBlock)
-		buf = buf[keySize:]
-		data = data[blockSize:]
-	}
-	if len(data) > 0 {
-		encryptedBlock, err = rsa.EncryptPKCS1v15(rand.Reader, publicKey, data)
-		if err != nil {
-			return
-		}
-		copy(buf, encryptedBlock)
-	}
-	return
+// Encrypt encrypts data with RSA algorithm.
+func Encrypt(data []byte, publicKey *rsa.PublicKey) (result []byte, err error) {
+	return crypto.Encrypt(data, &encryptor{publicKey}, nil)
 }
 
-//Decrypt decrypts data with RSA algorithm.
-func Decrypt(data []byte, privateKey *rsa.PrivateKey) (decryptedData []byte, err error) {
-	keySize := privateKey.N.BitLen() / 8
-	blockSize := keySize - 11
-	decryptedData = make([]byte, len(data)/keySize*blockSize)
-	buf := decryptedData
-	n := 0
-	var decryptedBlock []byte
-	for len(data) > 0 {
-		decryptedBlock, err = rsa.DecryptPKCS1v15(rand.Reader, privateKey, data[:keySize])
-		if err != nil {
-			return
-		}
-		n += copy(buf, decryptedBlock)
-		buf = buf[blockSize:]
-		data = data[keySize:]
-	}
-	decryptedData = decryptedData[:n]
-	return
+// Decrypt decrypts data with RSA algorithm.
+func Decrypt(data []byte, privateKey *rsa.PrivateKey) (result []byte, err error) {
+	return crypto.Decrypt(data, &decryptor{privateKey}, nil)
 }
 
-func computeEncryptedDataSize(dataLength, inSize, outSize int) int {
-	n := dataLength / inSize
-	if dataLength%inSize == 0 {
-		return outSize * n
-	}
-	return outSize * (n + 1)
+// NewEncryptionWriter creates and returns an encryption writer to encrypt data with RSA.
+func NewEncryptionWriter(w io.Writer, publicKey *rsa.PublicKey) io.WriteCloser {
+	return crypto.NewEncryptionWriter(w, &encryptor{publicKey}, nil)
+}
+
+// NewDecryptionReader creates and returns a decryption reader to decrypt data with RSA.
+func NewDecryptionReader(r io.Reader, privateKey *rsa.PrivateKey) (io.Reader, error) {
+	return crypto.NewDecryptionReader(r, &decryptor{privateKey}, nil)
 }

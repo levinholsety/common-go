@@ -1,3 +1,4 @@
+// Package aes implements AES encryption and decryption algorithm.
 package aes
 
 import (
@@ -6,48 +7,55 @@ import (
 	"io"
 
 	"github.com/levinholsety/common-go/crypto"
+	"github.com/levinholsety/common-go/crypto/mode/cbc"
+	"github.com/levinholsety/common-go/crypto/padding/pkcs7"
 )
 
-func newBlock(key, iv []byte) (b cipher.Block, err error) {
-	if b, err = aes.NewCipher(key); err != nil {
-		return
+func prepareCipher(key, iv []byte, f func(b cipher.Block) error) error {
+	b, err := aes.NewCipher(key)
+	if err != nil {
+		return err
 	}
-	b = crypto.NewCBC(b, iv)
+	b = cbc.NewCipher(b, iv)
+	return f(b)
+}
+
+// Encrypt encrypts data with AES CBC algorithm.
+func Encrypt(data, key, iv []byte) (result []byte, err error) {
+	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
+		result, err = crypto.Encrypt(data, &block{b}, pkcs7.NewPadding())
+		return
+	})
 	return
 }
 
-// Encrypt encrypts data from io.Reader to io.Writer with AES CBC algorithm.
-func Encrypt(key, iv []byte, w io.Writer, r io.Reader) (err error) {
-	b, err := newBlock(key, iv)
-	if err != nil {
+// Decrypt decrypts data with AES CBC algorithm.
+func Decrypt(data, key, iv []byte) (result []byte, err error) {
+	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
+		result, err = crypto.Decrypt(data, &block{b}, pkcs7.NewPadding())
 		return
-	}
-	return crypto.Encrypt(b, new(crypto.PKCS7Padding), w, r)
+	})
+	return
 }
 
-// EncryptByteArray encrypts data with AES CBC algorithm.
-func EncryptByteArray(key, iv, data []byte) (result []byte, err error) {
-	b, err := newBlock(key, iv)
-	if err != nil {
+// NewEncryptionWriter creates and returns an encryption writer.
+// The writer wraps w which holds the data to be encrypted.
+// When write data into it, the data will be encrypted with AES/CBC/PKCS7Padding algorithm.
+func NewEncryptionWriter(w io.Writer, key, iv []byte) (ew io.WriteCloser, err error) {
+	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
+		ew = crypto.NewEncryptionWriter(w, &block{b}, pkcs7.NewPadding())
 		return
-	}
-	return crypto.EncryptByteArray(b, new(crypto.PKCS7Padding), data)
+	})
+	return
 }
 
-// Decrypt decrypts data from io.Reader to io.Writer with AES CBC algorithm.
-func Decrypt(key, iv []byte, w io.Writer, r io.Reader) (err error) {
-	b, err := newBlock(key, iv)
-	if err != nil {
+// NewDecryptionReader creates and returns a decryption reader.
+// The reader wraps r which holds the data to be decrypted.
+// When read data from it, the data will be decrypted with AES/CBC/PKCS7Padding algorithm.
+func NewDecryptionReader(r io.Reader, key, iv []byte) (dr io.Reader, err error) {
+	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
+		dr, err = crypto.NewDecryptionReader(r, &block{b}, pkcs7.NewPadding())
 		return
-	}
-	return crypto.Decrypt(b, new(crypto.PKCS7Padding), w, r)
-}
-
-// DecryptByteArray decrypts data with AES CBC algorithm.
-func DecryptByteArray(key, iv, data []byte) (result []byte, err error) {
-	b, err := newBlock(key, iv)
-	if err != nil {
-		return
-	}
-	return crypto.DecryptByteArray(b, new(crypto.PKCS7Padding), data)
+	})
+	return
 }

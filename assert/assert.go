@@ -15,14 +15,21 @@ func NoError(tb testing.TB, err error) {
 	}
 }
 
-// StringEqual asserts expected string equals actural string.
+// StringEqual asserts expected string equals actrual string.
 func StringEqual(tb testing.TB, expected, actrual string) {
 	if expected != actrual {
 		tb.Fatalf("Assert failed:\nexpected: %s\n actrual: %s\n%s\n", expected, actrual, debug.Stack())
 	}
 }
 
-// ByteArrayEqual asserts expected byte array equals actual byte array.
+// IntEqual asserts expected int equals actrual int.
+func IntEqual(tb testing.TB, expected, actrual int) {
+	if expected != actrual {
+		tb.Fatalf("Assert failed:\nexpected: %d\n actrual: %d\n%s\n", expected, actrual, debug.Stack())
+	}
+}
+
+// ByteArrayEqual asserts expected byte array equals actrual byte array.
 func ByteArrayEqual(tb testing.TB, expected, actrual []byte) {
 	if !bytes.Equal(expected, actrual) {
 		tb.Fatalf("Assert failed:\nexpected: (%d)%s\n actrual: (%d)%s\n%s\n",

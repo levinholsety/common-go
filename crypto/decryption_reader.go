@@ -2,40 +2,16 @@ package crypto
 
 import (
 	"bufio"
-	"crypto/cipher"
 	"io"
 )
 
-// NewDecryptionReader creates a decryption reader to read data from encrypted data.
-func NewDecryptionReader(r io.Reader, block cipher.Block, padding Padding) (dr io.Reader, err error) {
-	blockSize := block.BlockSize()
-	buffer := make([]byte, blockSize)
-	eof := false
-	if _, err = io.ReadFull(r, buffer); err != nil {
-		if err == io.EOF {
-			eof = true
-		} else {
-			return
-		}
-	}
-	dr = bufio.NewReaderSize(&decryptionReader{
-		reader:    r,
-		block:     block,
-		padding:   padding,
-		blockSize: blockSize,
-		buffer:    buffer,
-		eof:       eof,
-	}, blockSize)
-	return
-}
-
 type decryptionReader struct {
-	reader    io.Reader
-	block     cipher.Block
-	padding   Padding
-	blockSize int
-	buffer    []byte
-	eof       bool
+	reader          io.Reader
+	decryptor       Decryptor
+	padding         Padding
+	cipherBlockSize int
+	cipherBlock     []byte
+	eof             bool
 }
 
 func (p *decryptionReader) Read(buffer []byte) (n int, err error) {
@@ -43,18 +19,44 @@ func (p *decryptionReader) Read(buffer []byte) (n int, err error) {
 		err = io.EOF
 		return
 	}
-	p.block.Decrypt(buffer, p.buffer)
-	if _, err = io.ReadFull(p.reader, p.buffer); err != nil {
+	n, err = p.decryptor.Decrypt(buffer, p.cipherBlock)
+	if _, err = io.ReadFull(p.reader, p.cipherBlock); err != nil {
 		if err == io.EOF {
 			p.eof = true
-			if buffer, err = p.padding.RemovePadding(buffer[:p.blockSize]); err != nil {
-				return
+			if p.padding != nil {
+				if buffer, err = p.padding.RemovePadding(buffer[:n]); err != nil {
+					return
+				}
+				n = len(buffer)
 			}
-			n = len(buffer)
-			err = io.EOF
 		}
 		return
 	}
-	n = p.blockSize
+	return
+}
+
+// NewDecryptionReader wraps r and returns a decryption reader to decrypt data.
+// r holds the data to be decrypted.
+// The data will be decrypted after it has been read from the decryption reader.
+func NewDecryptionReader(r io.Reader, decryptor Decryptor, padding Padding) (dr io.Reader, err error) {
+	cipherBlockSize := decryptor.CipherBlockSize()
+	cipherBlock := make([]byte, cipherBlockSize)
+	eof := false
+	if _, err = io.ReadFull(r, cipherBlock); err != nil {
+		if err == io.EOF {
+			eof = true
+			err = nil
+		} else {
+			return
+		}
+	}
+	dr = bufio.NewReaderSize(&decryptionReader{
+		reader:          r,
+		decryptor:       decryptor,
+		padding:         padding,
+		cipherBlockSize: cipherBlockSize,
+		cipherBlock:     cipherBlock,
+		eof:             eof,
+	}, cipherBlockSize)
 	return
 }

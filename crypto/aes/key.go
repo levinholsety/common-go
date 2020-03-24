@@ -7,18 +7,18 @@ import (
 )
 
 // NewKey creates a 256 bits AES key.
-func NewKey() ([]byte, error) {
+func NewKey() (key []byte, err error) {
 	return comm.RandomBytes(32)
 }
 
 // NewIV creates a IV.
-func NewIV() ([]byte, error) {
+func NewIV() (iv []byte, err error) {
 	return comm.RandomBytes(16)
 }
 
 // GenerateKey generates key from password.
-func GenerateKey(password, salt []byte, alg hash.Hash, key []byte) {
-	keySize := len(key)
+func GenerateKey(password, salt []byte, alg hash.Hash, keySize int) (key []byte) {
+	key = make([]byte, keySize)
 	for i := 0; i < keySize; i += alg.Size() {
 		alg.Reset()
 		if i > 0 {

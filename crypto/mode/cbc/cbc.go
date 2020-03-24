@@ -1,4 +1,5 @@
-package crypto
+// Package cbc implements CBC mode.
+package cbc
 
 import (
 	"crypto/cipher"
@@ -6,19 +7,19 @@ import (
 	"unsafe"
 )
 
-// CBC (Cipher Block Chaining) is a cipher mode.
-type CBC struct {
+// cbcBlock (Cipher Block Chaining) is a cipher mode.
+type cbcBlock struct {
 	block cipher.Block
 	iv    []byte
 	buf   []byte
 }
 
-var _ cipher.Block = new(CBC)
+var _ cipher.Block = new(cbcBlock)
 
-// NewCBC creates a cipher with CBC mode.
-func NewCBC(b cipher.Block, iv []byte) cipher.Block {
+// NewCipher creates a cipher with CBC mode.
+func NewCipher(b cipher.Block, iv []byte) cipher.Block {
 	blockSize := b.BlockSize()
-	cbc := &CBC{
+	cbc := &cbcBlock{
 		block: b,
 		iv:    make([]byte, blockSize),
 		buf:   make([]byte, blockSize),
@@ -28,19 +29,19 @@ func NewCBC(b cipher.Block, iv []byte) cipher.Block {
 }
 
 // BlockSize returns block size.
-func (p *CBC) BlockSize() int {
+func (p *cbcBlock) BlockSize() int {
 	return p.block.BlockSize()
 }
 
 // Encrypt encrypts a block.
-func (p *CBC) Encrypt(dst, src []byte) {
+func (p *cbcBlock) Encrypt(dst, src []byte) {
 	xorBytes(p.buf, src, p.iv)
 	p.block.Encrypt(dst, p.buf)
 	copy(p.iv, dst)
 }
 
 // Decrypt decrypts a block.
-func (p *CBC) Decrypt(dst, src []byte) {
+func (p *cbcBlock) Decrypt(dst, src []byte) {
 	p.block.Decrypt(p.buf, src)
 	xorBytes(dst, p.buf, p.iv)
 	copy(p.iv, src)

@@ -45,7 +45,6 @@ func (f *pemPKCS1FormatPrivateKey) DecodeEncryptedPrivateKey(pemData, password [
 					return
 				}
 				salt := iv[:8]
-				key := make([]byte, 32)
 				if len(password) == 0 {
 					fmt.Print("Password: ")
 					scanner := bufio.NewScanner(os.Stdin)
@@ -53,8 +52,8 @@ func (f *pemPKCS1FormatPrivateKey) DecodeEncryptedPrivateKey(pemData, password [
 						password = []byte(scanner.Text())
 					}
 				}
-				aes.GenerateKey(password, salt, md5.New(), key)
-				data, err = aes.DecryptByteArray(key, iv, block.Bytes)
+				key := aes.GenerateKey(password, salt, md5.New(), 32)
+				data, err = aes.Decrypt(key, iv, block.Bytes)
 			} else {
 				err = fmt.Errorf("unsupported DEK-Info: %s", v)
 				return

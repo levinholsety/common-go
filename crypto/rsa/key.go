@@ -5,13 +5,32 @@ import (
 	"crypto/rsa"
 )
 
-//Key format conversion tools.
 var (
-	XML       KeyFormat        = &xmlFormatKey{}
-	PEM_PKCS1 PrivateKeyFormat = &pemPKCS1FormatPrivateKey{}
-	PEM_PKCS8 PrivateKeyFormat = &pemPKCS8FormatPrivateKey{}
-	PEM       PublicKeyFormat  = &pemFormatPublicKey{}
+	kfXML   KeyFormat        = &xmlFormatKey{}
+	kfPKCS1 PrivateKeyFormat = &pemPKCS1FormatPrivateKey{}
+	kfPKCS8 PrivateKeyFormat = &pemPKCS8FormatPrivateKey{}
+	kfPEM   PublicKeyFormat  = &pemFormatPublicKey{}
 )
+
+// XMLKeyFormat returns an instance of XML key format.
+func XMLKeyFormat() KeyFormat {
+	return kfXML
+}
+
+// PKCS1PrivateKeyFormat returns an instance of PKCS1 private key format.
+func PKCS1PrivateKeyFormat() PrivateKeyFormat {
+	return kfPKCS1
+}
+
+// PKCS8PrivateKeyFormat returns an instance of PKCS8 private key format.
+func PKCS8PrivateKeyFormat() PrivateKeyFormat {
+	return kfPKCS8
+}
+
+// PEMPublicKeyFormat returns an instance of PEM public key format.
+func PEMPublicKeyFormat() PublicKeyFormat {
+	return kfPEM
+}
 
 //PrivateKeyFormat provides methods for private key format conversion.
 type PrivateKeyFormat interface {

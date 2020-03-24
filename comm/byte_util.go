@@ -1,7 +1,7 @@
 package comm
 
-// FillByte fills buffer with specified byte.
-func FillByte(buf []byte, b byte) {
+// FillByteArray fills buffer with specified byte.
+func FillByteArray(buf []byte, b byte) {
 	l := len(buf)
 	if l == 0 {
 		return

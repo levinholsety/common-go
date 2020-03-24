@@ -12,11 +12,11 @@ import (
 func Test_RSA_KeyFormatConversion(t *testing.T) {
 	key, err := alg.NewPrivateKey()
 	assert.NoError(t, err)
-	testPrivateKey(t, "PEM PKCS#1", key, alg.PEM_PKCS1)
-	testPrivateKey(t, "PEM PKCS#8", key, alg.PEM_PKCS8)
-	testPrivateKey(t, "XML", key, alg.XML)
-	testPublicKey(t, "PEM", &key.PublicKey, alg.PEM)
-	testPublicKey(t, "XML", &key.PublicKey, alg.XML)
+	testPrivateKey(t, "PEM PKCS#1", key, alg.PKCS1PrivateKeyFormat())
+	testPrivateKey(t, "PEM PKCS#8", key, alg.PKCS8PrivateKeyFormat())
+	testPrivateKey(t, "XML", key, alg.XMLKeyFormat())
+	testPublicKey(t, "PEM", &key.PublicKey, alg.PEMPublicKeyFormat())
+	testPublicKey(t, "XML", &key.PublicKey, alg.XMLKeyFormat())
 }
 
 func testPrivateKey(t *testing.T, name string, key *rsa.PrivateKey, f alg.PrivateKeyFormat) {
