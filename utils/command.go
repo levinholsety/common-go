@@ -39,9 +39,6 @@ func (p *Command) ClearEnvVars() *Command {
 func (p *Command) Execute(args ...string) error {
 	cmd := exec.Command(p.Path, args...)
 	return cmd.Run()
-	// console.RedirectCommandOutput(cmd)
-	// console.RedirectCommandError(cmd)
-	// return cmd.Run()
 }
 
 // ExecuteOutput executes command and returns output combined with command output and error.
