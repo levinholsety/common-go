@@ -38,6 +38,8 @@ func (p *Command) ClearEnvVars() *Command {
 // Execute executes command and redirect command output and error to standard output and error.
 func (p *Command) Execute(args ...string) error {
 	cmd := exec.Command(p.Path, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 

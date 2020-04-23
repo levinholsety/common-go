@@ -112,7 +112,7 @@ func (p *JDK) javac(dir string, binDir string, args []string) error {
 					if err != nil {
 						return err
 					}
-					_, err = comm.CopyFile(srcPath, binDir)
+					_, err = comm.CopyFile(filepath.Join(binDir, name), srcPath)
 					if err != nil {
 						return err
 					}
