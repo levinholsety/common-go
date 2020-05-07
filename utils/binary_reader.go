@@ -1,13 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
-)
-
-// Delimiters.
-const (
-	DelimNull byte = 0
 )
 
 // NewBinaryReader creates an instance of BinaryReader.
@@ -15,6 +11,7 @@ func NewBinaryReader(r io.Reader, o binary.ByteOrder) *BinaryReader {
 	return &BinaryReader{
 		reader:    r,
 		ByteOrder: o,
+		OnError:   func(err error) { panic(err) },
 	}
 }
 
@@ -22,17 +19,15 @@ func NewBinaryReader(r io.Reader, o binary.ByteOrder) *BinaryReader {
 type BinaryReader struct {
 	reader    io.Reader
 	ByteOrder binary.ByteOrder
+	OnError   func(err error)
 }
 
-// Read reads content into data.
+// Read reads structured binary data from internal reader into data.
 func (p *BinaryReader) Read(data interface{}) (err error) {
 	err = binary.Read(p.reader, p.ByteOrder, data)
-	return
-}
-
-// ReadUInt64 reads a uint64 value.
-func (p *BinaryReader) ReadUInt64() (result uint64, err error) {
-	err = p.Read(&result)
+	if err != nil {
+		p.OnError(err)
+	}
 	return
 }
 
@@ -42,8 +37,14 @@ func (p *BinaryReader) ReadInt64() (result int64, err error) {
 	return
 }
 
-// ReadUInt32 reads a uint32 value.
-func (p *BinaryReader) ReadUInt32() (result uint32, err error) {
+// ReadUInt64 reads a uint64 value.
+func (p *BinaryReader) ReadUInt64() (result uint64, err error) {
+	err = p.Read(&result)
+	return
+}
+
+// ReadFloat64 reads a float64 value.
+func (p *BinaryReader) ReadFloat64() (result float64, err error) {
 	err = p.Read(&result)
 	return
 }
@@ -54,8 +55,14 @@ func (p *BinaryReader) ReadInt32() (result int32, err error) {
 	return
 }
 
-// ReadUInt16 reads a uint16 value.
-func (p *BinaryReader) ReadUInt16() (result uint16, err error) {
+// ReadUInt32 reads a uint32 value.
+func (p *BinaryReader) ReadUInt32() (result uint32, err error) {
+	err = p.Read(&result)
+	return
+}
+
+// ReadFloat32 reads a float32 value.
+func (p *BinaryReader) ReadFloat32() (result float32, err error) {
 	err = p.Read(&result)
 	return
 }
@@ -66,8 +73,8 @@ func (p *BinaryReader) ReadInt16() (result int16, err error) {
 	return
 }
 
-// ReadUInt8 reads a uint8 value.
-func (p *BinaryReader) ReadUInt8() (result uint8, err error) {
+// ReadUInt16 reads a uint16 value.
+func (p *BinaryReader) ReadUInt16() (result uint16, err error) {
 	err = p.Read(&result)
 	return
 }
@@ -78,44 +85,43 @@ func (p *BinaryReader) ReadInt8() (result int8, err error) {
 	return
 }
 
+// ReadUInt8 reads a uint8 value.
+func (p *BinaryReader) ReadUInt8() (result uint8, err error) {
+	err = p.Read(&result)
+	return
+}
+
 // ReadByte reads a byte.
 func (p *BinaryReader) ReadByte() (result byte, err error) {
 	err = p.Read(&result)
 	return
 }
 
-// ReadByteArray reads byte array in specified size.
-func (p *BinaryReader) ReadByteArray(size int) (result []byte, err error) {
-	result = make([]byte, size)
-	_, err = io.ReadFull(p.reader, result)
-	return
-}
-
-// ReadByteArrayUntil reads byte array until delim occurs.
-func (p *BinaryReader) ReadByteArrayUntil(delim byte) (result []byte, err error) {
+// ReadBytesUntil reads bytes until reaches delim byte.
+func (p *BinaryReader) ReadBytesUntil(delim byte) (result []byte, err error) {
 	var b byte
-	for err = p.Read(&b); err == nil && b != delim; err = p.Read(&b) {
-		result = append(result, b)
+	buf := &bytes.Buffer{}
+	for b, err = p.ReadByte(); err == nil && b != delim; b, err = p.ReadByte() {
+		buf.WriteByte(b)
 	}
-	return
-}
-
-// ReadStringFixed reads string in specified size.
-func (p *BinaryReader) ReadStringFixed(size int) (result string, err error) {
-	buf, err := p.ReadByteArray(size)
 	if err != nil {
 		return
 	}
-	result = string(buf)
+	result = buf.Bytes()
 	return
 }
 
-// ReadString reads string until null character occurs.
-func (p *BinaryReader) ReadString() (result string, err error) {
-	buf, err := p.ReadByteArrayUntil(DelimNull)
+// ReadStringUntil reads string until reaches delim byte.
+func (p *BinaryReader) ReadStringUntil(delim byte) (result string, err error) {
+	data, err := p.ReadBytesUntil(delim)
 	if err != nil {
 		return
 	}
-	result = string(buf)
+	result = string(data)
 	return
+}
+
+// ReadStringUntilNull reads string until reaches null character.
+func (p *BinaryReader) ReadStringUntilNull() (result string, err error) {
+	return p.ReadStringUntil(0)
 }

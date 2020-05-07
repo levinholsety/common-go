@@ -16,8 +16,8 @@ type Snowflake struct {
 	sequenceID     int64
 }
 
-// NewIDForNode creates an unique ID with specified node ID.
-func (p *Snowflake) NewIDForNode(nodeID int64) int64 {
+// NewIDOfNode creates an unique ID of specified node.
+func (p *Snowflake) NewIDOfNode(nodeID int64) int64 {
 	if nodeID>>p.NodeIDBits > 0 {
 		log.Fatalf("Node ID(0 to %d) is too large: %d", 1<<p.NodeIDBits-1, nodeID)
 	}
@@ -32,7 +32,7 @@ func (p *Snowflake) NewIDForNode(nodeID int64) int64 {
 
 // NewID creates an unique ID.
 func (p *Snowflake) NewID() int64 {
-	return p.NewIDForNode(0)
+	return p.NewIDOfNode(0)
 }
 
 func (p *Snowflake) next() (timestamp int64, sequenceID int64) {

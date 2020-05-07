@@ -16,7 +16,7 @@ type ProGuard struct {
 // NewProGuard creates a ProGuard instance.
 func NewProGuard(home string) *ProGuard {
 	tool := ProGuard{home: home, proguardPath: proguard}
-	if comm.IsWindows {
+	if comm.IsWindows() {
 		tool.proguardPath += ".bat"
 	} else {
 		tool.proguardPath += ".sh"

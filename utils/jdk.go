@@ -37,7 +37,7 @@ func NewJDK(javaHome string) *JDK {
 }
 
 func (p *JDK) getBinaryFilePath(name string) string {
-	if comm.IsWindows {
+	if comm.IsWindows() {
 		name += ".exe"
 	}
 	if len(p.javaHome) > 0 {

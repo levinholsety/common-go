@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/levinholsety/common-go/comm"
@@ -8,57 +9,62 @@ import (
 
 // TextWriter provides functions to write text.
 type TextWriter struct {
-	Writer            io.Writer
-	LineSeparator     string
-	IndentationString string
-	indent            int
+	writer        io.Writer
+	LineIndent    string
+	LineSeparator string
+	OnError       func(err error)
+	indentLevel   int
 }
 
 // NewTextWriter creates a new TextWriter.
 func NewTextWriter(w io.Writer) *TextWriter {
 	return &TextWriter{
-		Writer:            w,
-		LineSeparator:     comm.LineSeparator,
-		IndentationString: "    ",
+		writer:        w,
+		LineIndent:    "    ",
+		LineSeparator: comm.LineSeparator(),
+		OnError: func(err error) {
+			panic(err)
+		},
+		indentLevel: 0,
 	}
-}
-
-// Write writes byte array.
-func (p *TextWriter) Write(value []byte) (int, error) {
-	return p.Writer.Write(value)
 }
 
 // WriteString writes string value.
-func (p *TextWriter) WriteString(value string) (int, error) {
-	return p.Write([]byte(value))
-}
-
-// WriteLine writes text followed with a line separator.
-func (p *TextWriter) WriteLine(text string) (n int, err error) {
-	var num int
-	for i := 0; i < p.indent; i++ {
-		if num, err = p.WriteString(p.IndentationString); err != nil {
-			return
-		}
-		n += num
+func (p *TextWriter) WriteString(format string, args ...interface{}) (n int, err error) {
+	text := fmt.Sprintf(format, args...)
+	n, err = p.writer.Write([]byte(text))
+	if err != nil {
+		p.OnError(err)
 	}
-	if num, err = p.WriteString(text); err != nil {
-		return
-	}
-	n += num
-	if num, err = p.WriteString(p.LineSeparator); err != nil {
-		return
-	}
-	n += num
 	return
 }
 
-// IncreaseIndent increases indent.
-func (p *TextWriter) IncreaseIndent() {
-	p.indent++
+// WriteLine writes text followed with a line separator.
+func (p *TextWriter) WriteLine(format string, args ...interface{}) (n int, err error) {
+	var count int
+	for i := 0; i < p.indentLevel; i++ {
+		count, err = p.WriteString(p.LineIndent)
+		if err != nil {
+			return
+		}
+		n += count
+	}
+	count, err = p.WriteString(format, args...)
+	if err != nil {
+		return
+	}
+	n += count
+	count, err = p.WriteString(p.LineSeparator)
+	if err != nil {
+		return
+	}
+	n += count
+	return
 }
 
-// DecreaseIndent decreases indent.
-func (p *TextWriter) DecreaseIndent() {
-	p.indent--
+// Indent indents line when invokes WriteLine function.
+func (p *TextWriter) Indent(f func()) {
+	p.indentLevel++
+	f()
+	p.indentLevel--
 }

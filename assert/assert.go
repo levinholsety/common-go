@@ -18,14 +18,16 @@ func NoError(tb testing.TB, err error) {
 // StringEqual asserts that expected string and actrual string are equal.
 func StringEqual(tb testing.TB, expected, actrual string) {
 	if expected != actrual {
-		tb.Fatalf("Assert failed:\nexpected: %s\n actrual: %s\n%s\n", expected, actrual, debug.Stack())
+		tb.Fatalf("Assert failed:\nexpected: %s\n actrual: %s\n%s\n",
+			expected, actrual, debug.Stack())
 	}
 }
 
 // IntEqual asserts that expected int and actrual int are equal.
 func IntEqual(tb testing.TB, expected, actrual int) {
 	if expected != actrual {
-		tb.Fatalf("Assert failed:\nexpected: %d\n actrual: %d\n%s\n", expected, actrual, debug.Stack())
+		tb.Fatalf("Assert failed:\nexpected: %d\n actrual: %d\n%s\n",
+			expected, actrual, debug.Stack())
 	}
 }
 
