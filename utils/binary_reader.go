@@ -24,7 +24,11 @@ type BinaryReader struct {
 
 // Read reads structured binary data from internal reader into data.
 func (p *BinaryReader) Read(data interface{}) (err error) {
-	err = binary.Read(p.reader, p.ByteOrder, data)
+	if buf, ok := data.([]byte); ok {
+		_, err = io.ReadFull(p.reader, buf)
+	} else {
+		err = binary.Read(p.reader, p.ByteOrder, data)
+	}
 	if err != nil {
 		p.OnError(err)
 	}
@@ -97,6 +101,17 @@ func (p *BinaryReader) ReadByte() (result byte, err error) {
 	return
 }
 
+// ReadBytes reads bytes in length.
+func (p *BinaryReader) ReadBytes(length uint) (result []byte, err error) {
+	buf := make([]byte, length)
+	err = p.Read(buf)
+	if err != nil {
+		return
+	}
+	result = buf
+	return
+}
+
 // ReadBytesUntil reads bytes until reaches delim byte.
 func (p *BinaryReader) ReadBytesUntil(delim byte) (result []byte, err error) {
 	var b byte
@@ -111,17 +126,12 @@ func (p *BinaryReader) ReadBytesUntil(delim byte) (result []byte, err error) {
 	return
 }
 
-// ReadStringUntil reads string until reaches delim byte.
-func (p *BinaryReader) ReadStringUntil(delim byte) (result string, err error) {
-	data, err := p.ReadBytesUntil(delim)
+// ReadString reads string until reaches null character.
+func (p *BinaryReader) ReadString() (result string, err error) {
+	data, err := p.ReadBytesUntil(0)
 	if err != nil {
 		return
 	}
 	result = string(data)
 	return
-}
-
-// ReadStringUntilNull reads string until reaches null character.
-func (p *BinaryReader) ReadStringUntilNull() (result string, err error) {
-	return p.ReadStringUntil(0)
 }
