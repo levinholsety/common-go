@@ -85,13 +85,15 @@ func (p Vector) Duplicate() Tensor {
 	return result
 }
 
-func (p Vector) uo(f func(a float64) float64) Tensor {
+// UO executes unary operation on self with specified unary operation function.
+func (p Vector) UO(f func(a float64) float64) Tensor {
 	result := NewVector(len(p))
-	p.ForEach(func(i int, v Scalar) { result[i] = v.uo(f) })
+	p.ForEach(func(i int, v Scalar) { result[i] = v.UO(f).(Scalar) })
 	return result
 }
 
-func (p Vector) bo(f func(a, b float64) float64, tensorA Tensor) Tensor {
+// BO executes binary operation on self and another tensor with specified binary operation function.
+func (p Vector) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
 	ff := func(a, b Scalar) Scalar {
 		return Scalar(f(float64(a), float64(b)))
 	}
@@ -121,72 +123,42 @@ func (p Vector) bo(f func(a, b float64) float64, tensorA Tensor) Tensor {
 
 // Add adds another tensor to self and returns the result.
 func (p Vector) Add(a Tensor) Tensor {
-	return p.bo(add, a)
+	return p.BO(add, a)
 }
 
 // Sub subtracts another tensor from self and returns the result.
 func (p Vector) Sub(a Tensor) Tensor {
-	return p.bo(sub, a)
+	return p.BO(sub, a)
 }
 
 // Mul multiplies self by another tensor and returns the result.
 func (p Vector) Mul(a Tensor) Tensor {
-	return p.bo(mul, a)
+	return p.BO(mul, a)
 }
 
 // Div divides self by another tensor and returns the result.
 func (p Vector) Div(a Tensor) Tensor {
-	return p.bo(div, a)
+	return p.BO(div, a)
 }
 
 // Negative returns the negative value of self.
 func (p Vector) Negative() Tensor {
-	return p.uo(negative)
+	return p.UO(negative)
 }
 
 // Reciprocal returns the reciprocal of self.
 func (p Vector) Reciprocal() Tensor {
-	return p.uo(reciprocal)
+	return p.UO(reciprocal)
 }
 
 // Square returns the square of self.
 func (p Vector) Square() Tensor {
-	return p.uo(square)
+	return p.UO(square)
 }
 
 // Cube returns the cube of self.
 func (p Vector) Cube() Tensor {
-	return p.uo(cube)
-}
-
-// Pow returns self to the power of another tensor and returns the result.
-func (p Vector) Pow(a Tensor) Tensor {
-	return p.bo(math.Pow, a)
-}
-
-// Sqrt returns the square root of self.
-func (p Vector) Sqrt() Tensor {
-	return p.uo(math.Sqrt)
-}
-
-// Cbrt returns the cube root of self.
-func (p Vector) Cbrt() Tensor {
-	return p.uo(math.Cbrt)
-}
-
-// Abs returns the absolute value of self.
-func (p Vector) Abs() Tensor {
-	return p.uo(math.Abs)
-}
-
-// Exp returns the base-e exponential of self.
-func (p Vector) Exp() Tensor {
-	return p.uo(math.Exp)
-}
-
-// Log returns the natural logarithm of self.
-func (p Vector) Log() Tensor {
-	return p.uo(math.Log)
+	return p.UO(cube)
 }
 
 // Sum returns the sum of self.
@@ -205,7 +177,7 @@ func (p Vector) Norm() (result Scalar) {
 	for _, v := range p {
 		result += v.Square().(Scalar)
 	}
-	result = result.Sqrt().(Scalar)
+	result = result.UO(math.Sqrt).(Scalar)
 	return
 }
 
@@ -217,7 +189,7 @@ func (p Vector) T() Tensor {
 // Dot returns the dot product between self and another tensor and returns the result.
 func (p Vector) Dot(tensorA Tensor) Tensor {
 	if a, ok := tensorA.(Scalar); ok {
-		return p.bo(mul, a)
+		return p.BO(mul, a)
 	}
 	if a, ok := tensorA.(Vector); ok {
 		if len(p) == len(a) {

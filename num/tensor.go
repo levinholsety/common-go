@@ -7,6 +7,11 @@ import (
 	"github.com/levinholsety/common-go/comm"
 )
 
+var (
+	errNotApplicable   = errors.New("not applicable")
+	errNotSquareMatrix = errors.New("not square matrix")
+)
+
 // Tensor represents a tensor.
 type Tensor interface {
 	fmt.Stringer
@@ -20,23 +25,14 @@ type Tensor interface {
 	Reciprocal() Tensor
 	Square() Tensor
 	Cube() Tensor
-	Pow(a Tensor) Tensor
-	Sqrt() Tensor
-	Cbrt() Tensor
-	Abs() Tensor
-	Exp() Tensor
-	Log() Tensor
+	UO(f func(a float64) float64) Tensor
+	BO(f func(a, b float64) float64, b Tensor) Tensor
 	Sum() Scalar
 	Mean() Scalar
 	Norm() Scalar
 	T() Tensor
 	Dot(a Tensor) Tensor
 }
-
-var (
-	errNotApplicable   = errors.New("not applicable")
-	errNotSquareMatrix = errors.New("not square matrix")
-)
 
 func add(a, b float64) float64 {
 	return a + b
