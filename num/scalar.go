@@ -36,44 +36,44 @@ func (v Scalar) UO(f func(a float64) float64) Tensor {
 }
 
 // BO executes binary operation on self and another tensor with specified binary operation function.
-func (v Scalar) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
+func (v Scalar) BO(f func(a, b float64) float64, tensorB Tensor) Tensor {
 	ff := func(a, b Scalar) Scalar {
 		return Scalar(f(float64(a), float64(b)))
 	}
-	if a, ok := tensorA.(Scalar); ok {
-		return ff(v, a)
+	if b, ok := tensorB.(Scalar); ok {
+		return ff(v, b)
 	}
-	if a, ok := tensorA.(Vector); ok {
-		result := NewVector(len(a))
-		a.ForEach(func(i int, s Scalar) { result[i] = ff(v, s) })
+	if b, ok := tensorB.(Vector); ok {
+		result := NewVector(len(b))
+		b.ForEach(func(i int, s Scalar) { result[i] = ff(v, s) })
 		return result
 	}
-	if a, ok := tensorA.(Matrix); ok {
-		result := NewMatrix(a.Size())
-		a.ForEach(func(i, j int, s Scalar) { result[i][j] = ff(v, s) })
+	if b, ok := tensorB.(Matrix); ok {
+		result := NewMatrix(b.Size())
+		b.ForEach(func(i, j int, s Scalar) { result[i][j] = ff(v, s) })
 		return result
 	}
 	panic(errNotApplicable)
 }
 
 // Add adds another tensor to self and returns the result.
-func (v Scalar) Add(a Tensor) Tensor {
-	return v.BO(add, a)
+func (v Scalar) Add(b Tensor) Tensor {
+	return v.BO(add, b)
 }
 
 // Sub subtracts another tensor from self and returns the result.
-func (v Scalar) Sub(a Tensor) Tensor {
-	return v.BO(sub, a)
+func (v Scalar) Sub(b Tensor) Tensor {
+	return v.BO(sub, b)
 }
 
 // Mul multiplies self by another tensor and returns the result.
-func (v Scalar) Mul(a Tensor) Tensor {
-	return v.BO(mul, a)
+func (v Scalar) Mul(b Tensor) Tensor {
+	return v.BO(mul, b)
 }
 
 // Div divides self by another tensor and returns the result.
-func (v Scalar) Div(a Tensor) Tensor {
-	return v.BO(div, a)
+func (v Scalar) Div(b Tensor) Tensor {
+	return v.BO(div, b)
 }
 
 // Negative returns the negative value of self.
@@ -117,6 +117,6 @@ func (v Scalar) T() Tensor {
 }
 
 // Dot returns the dot product between self and another tensor and returns the result.
-func (v Scalar) Dot(a Tensor) Tensor {
-	return v.BO(mul, a)
+func (v Scalar) Dot(b Tensor) Tensor {
+	return v.BO(mul, b)
 }

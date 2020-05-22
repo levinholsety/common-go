@@ -115,28 +115,28 @@ func (p Matrix) UO(f func(a float64) float64) Tensor {
 }
 
 // BO executes binary operation on self and another tensor with specified binary operation function.
-func (p Matrix) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
+func (p Matrix) BO(f func(a, b float64) float64, tensorB Tensor) Tensor {
 	ff := func(a, b Scalar) Scalar {
 		return Scalar(f(float64(a), float64(b)))
 	}
-	if a, ok := tensorA.(Scalar); ok {
+	if b, ok := tensorB.(Scalar); ok {
 		result := NewMatrix(p.Size())
-		p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, a) })
+		p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, b) })
 		return result
 	}
-	if a, ok := tensorA.(Vector); ok {
+	if b, ok := tensorB.(Vector); ok {
 		size := p.Size()
-		if size.ColumnCount == len(a) {
+		if size.ColumnCount == len(b) {
 			result := NewMatrix(size)
-			p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, a[j]) })
+			p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, b[j]) })
 			return result
 		}
 	}
-	if a, ok := tensorA.(Matrix); ok {
+	if b, ok := tensorB.(Matrix); ok {
 		size := p.Size()
-		if size == a.Size() {
+		if size == b.Size() {
 			result := NewMatrix(size)
-			p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, a[i][j]) })
+			p.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(v, b[i][j]) })
 			return result
 		}
 	}
@@ -144,23 +144,23 @@ func (p Matrix) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
 }
 
 // Add adds another tensor to self and returns the result.
-func (p Matrix) Add(a Tensor) Tensor {
-	return p.BO(add, a)
+func (p Matrix) Add(b Tensor) Tensor {
+	return p.BO(add, b)
 }
 
 // Sub subtracts another tensor from self and returns the result.
-func (p Matrix) Sub(a Tensor) Tensor {
-	return p.BO(sub, a)
+func (p Matrix) Sub(b Tensor) Tensor {
+	return p.BO(sub, b)
 }
 
 // Mul multiplies self by another tensor and returns the result.
-func (p Matrix) Mul(a Tensor) Tensor {
-	return p.BO(mul, a)
+func (p Matrix) Mul(b Tensor) Tensor {
+	return p.BO(mul, b)
 }
 
 // Div divides self by another tensor and returns the result.
-func (p Matrix) Div(a Tensor) Tensor {
-	return p.BO(div, a)
+func (p Matrix) Div(b Tensor) Tensor {
+	return p.BO(div, b)
 }
 
 // Negative returns the negative value of self.
@@ -214,27 +214,27 @@ func (p Matrix) T() Tensor {
 }
 
 // Dot returns the dot product between self and another tensor and returns the result.
-func (p Matrix) Dot(tensorA Tensor) Tensor {
-	if a, ok := tensorA.(Scalar); ok {
-		return p.BO(mul, a)
+func (p Matrix) Dot(tensorB Tensor) Tensor {
+	if b, ok := tensorB.(Scalar); ok {
+		return p.BO(mul, b)
 	}
-	if a, ok := tensorA.(Vector); ok {
+	if b, ok := tensorB.(Vector); ok {
 		size := p.Size()
-		if size.ColumnCount == len(a) {
+		if size.ColumnCount == len(b) {
 			result := NewVector(size.RowCount)
-			p.ForEach(func(i, j int, v Scalar) { result[i] += v * a[j] })
+			p.ForEach(func(i, j int, v Scalar) { result[i] += v * b[j] })
 			return result
 		}
 	}
-	if a, ok := tensorA.(Matrix); ok {
+	if b, ok := tensorB.(Matrix); ok {
 		sizeA := p.Size()
-		sizeB := a.Size()
+		sizeB := b.Size()
 		if sizeA.ColumnCount == sizeB.RowCount {
 			size := MatrixSize{sizeA.RowCount, sizeB.ColumnCount}
 			result := NewMatrix(size)
 			p.ForEach(func(i, j int, v Scalar) {
 				for k := 0; k < sizeB.ColumnCount; k++ {
-					result[i][k] += v * a[j][k]
+					result[i][k] += v * b[j][k]
 				}
 			})
 			return result

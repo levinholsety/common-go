@@ -93,28 +93,28 @@ func (p Vector) UO(f func(a float64) float64) Tensor {
 }
 
 // BO executes binary operation on self and another tensor with specified binary operation function.
-func (p Vector) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
+func (p Vector) BO(f func(a, b float64) float64, tensorB Tensor) Tensor {
 	ff := func(a, b Scalar) Scalar {
 		return Scalar(f(float64(a), float64(b)))
 	}
-	if a, ok := tensorA.(Scalar); ok {
+	if b, ok := tensorB.(Scalar); ok {
 		result := NewVector(len(p))
-		p.ForEach(func(i int, v Scalar) { result[i] = ff(v, a) })
+		p.ForEach(func(i int, v Scalar) { result[i] = ff(v, b) })
 		return result
 	}
-	if a, ok := tensorA.(Vector); ok {
+	if b, ok := tensorB.(Vector); ok {
 		size := len(p)
-		if size == len(a) {
+		if size == len(b) {
 			result := NewVector(size)
-			p.ForEach(func(i int, v Scalar) { result[i] = ff(v, a[i]) })
+			p.ForEach(func(i int, v Scalar) { result[i] = ff(v, b[i]) })
 			return result
 		}
 	}
-	if a, ok := tensorA.(Matrix); ok {
-		size := a.Size()
+	if b, ok := tensorB.(Matrix); ok {
+		size := b.Size()
 		if len(p) == size.ColumnCount {
 			result := NewMatrix(size)
-			a.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(p[j], v) })
+			b.ForEach(func(i, j int, v Scalar) { result[i][j] = ff(p[j], v) })
 			return result
 		}
 	}
@@ -122,23 +122,23 @@ func (p Vector) BO(f func(a, b float64) float64, tensorA Tensor) Tensor {
 }
 
 // Add adds another tensor to self and returns the result.
-func (p Vector) Add(a Tensor) Tensor {
-	return p.BO(add, a)
+func (p Vector) Add(b Tensor) Tensor {
+	return p.BO(add, b)
 }
 
 // Sub subtracts another tensor from self and returns the result.
-func (p Vector) Sub(a Tensor) Tensor {
-	return p.BO(sub, a)
+func (p Vector) Sub(b Tensor) Tensor {
+	return p.BO(sub, b)
 }
 
 // Mul multiplies self by another tensor and returns the result.
-func (p Vector) Mul(a Tensor) Tensor {
-	return p.BO(mul, a)
+func (p Vector) Mul(b Tensor) Tensor {
+	return p.BO(mul, b)
 }
 
 // Div divides self by another tensor and returns the result.
-func (p Vector) Div(a Tensor) Tensor {
-	return p.BO(div, a)
+func (p Vector) Div(b Tensor) Tensor {
+	return p.BO(div, b)
 }
 
 // Negative returns the negative value of self.
@@ -187,22 +187,22 @@ func (p Vector) T() Tensor {
 }
 
 // Dot returns the dot product between self and another tensor and returns the result.
-func (p Vector) Dot(tensorA Tensor) Tensor {
-	if a, ok := tensorA.(Scalar); ok {
-		return p.BO(mul, a)
+func (p Vector) Dot(tensorB Tensor) Tensor {
+	if b, ok := tensorB.(Scalar); ok {
+		return p.BO(mul, b)
 	}
-	if a, ok := tensorA.(Vector); ok {
-		if len(p) == len(a) {
+	if b, ok := tensorB.(Vector); ok {
+		if len(p) == len(b) {
 			var result Scalar
-			p.ForEach(func(i int, v Scalar) { result += v * a[i] })
+			p.ForEach(func(i int, v Scalar) { result += v * b[i] })
 			return result
 		}
 	}
-	if a, ok := tensorA.(Matrix); ok {
-		size := a.Size()
+	if b, ok := tensorB.(Matrix); ok {
+		size := b.Size()
 		if len(p) == size.RowCount {
 			result := NewVector(size.ColumnCount)
-			a.ForEach(func(i, j int, v Scalar) { result[j] += p[i] * v })
+			b.ForEach(func(i, j int, v Scalar) { result[j] += p[i] * v })
 			return result
 		}
 	}
@@ -210,20 +210,20 @@ func (p Vector) Dot(tensorA Tensor) Tensor {
 }
 
 // Cross returns the cross product between self and another vector and returns the result.
-func (p Vector) Cross(a Vector) Tensor {
+func (p Vector) Cross(b Vector) Tensor {
 	pSize := len(p)
-	aSize := len(a)
+	aSize := len(b)
 	if pSize == 2 && aSize == 2 {
-		return p[0]*a[1] - p[1]*a[0]
+		return p[0]*b[1] - p[1]*b[0]
 	}
 	if pSize == 2 && aSize == 3 {
-		return Vector{p[1] * a[2], -p[0] * a[2], p[0]*a[1] - p[1]*a[0]}
+		return Vector{p[1] * b[2], -p[0] * b[2], p[0]*b[1] - p[1]*b[0]}
 	}
 	if pSize == 3 && aSize == 2 {
-		return Vector{-p[2] * a[1], p[2] * a[0], p[0]*a[1] - p[1]*a[0]}
+		return Vector{-p[2] * b[1], p[2] * b[0], p[0]*b[1] - p[1]*b[0]}
 	}
 	if pSize == 3 && aSize == 3 {
-		return Vector{p[1]*a[2] - p[2]*a[1], p[2]*a[0] - p[0]*a[2], p[0]*a[1] - p[1]*a[0]}
+		return Vector{p[1]*b[2] - p[2]*b[1], p[2]*b[0] - p[0]*b[2], p[0]*b[1] - p[1]*b[0]}
 	}
 	panic(errNotApplicable)
 }

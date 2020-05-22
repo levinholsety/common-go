@@ -17,10 +17,10 @@ type Tensor interface {
 	fmt.Stringer
 	comm.Equalizer
 	Duplicate() Tensor
-	Add(a Tensor) Tensor
-	Sub(a Tensor) Tensor
-	Mul(a Tensor) Tensor
-	Div(a Tensor) Tensor
+	Add(b Tensor) Tensor
+	Sub(b Tensor) Tensor
+	Mul(b Tensor) Tensor
+	Div(b Tensor) Tensor
 	Negative() Tensor
 	Reciprocal() Tensor
 	Square() Tensor
@@ -31,7 +31,7 @@ type Tensor interface {
 	Mean() Scalar
 	Norm() Scalar
 	T() Tensor
-	Dot(a Tensor) Tensor
+	Dot(b Tensor) Tensor
 }
 
 func add(a, b float64) float64 {
