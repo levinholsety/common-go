@@ -9,8 +9,8 @@ import (
 // Snowflake is a service used to generate unique IDs for objects within Twitter. This is an implementation.
 type Snowflake struct {
 	Epoch          int64
-	NodeIDBits     int
-	SequenceIDBits int
+	NodeIDBits     uint
+	SequenceIDBits uint
 	lock           sync.Mutex
 	timestamp      int64
 	sequenceID     int64
