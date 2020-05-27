@@ -8,7 +8,7 @@ import (
 type decryptionReader struct {
 	reader          io.Reader
 	decryptor       Decryptor
-	padding         Padding
+	padding         PaddingAlgorithm
 	cipherBlockSize int
 	cipherBlock     []byte
 	eof             bool
@@ -38,7 +38,7 @@ func (p *decryptionReader) Read(buffer []byte) (n int, err error) {
 // NewDecryptionReader wraps r and returns a decryption reader to decrypt data.
 // r holds the data to be decrypted.
 // The data will be decrypted after it has been read from the decryption reader.
-func NewDecryptionReader(r io.Reader, decryptor Decryptor, padding Padding) (dr io.Reader, err error) {
+func NewDecryptionReader(r io.Reader, decryptor Decryptor, padding PaddingAlgorithm) (dr io.Reader, err error) {
 	cipherBlockSize := decryptor.CipherBlockSize()
 	cipherBlock := make([]byte, cipherBlockSize)
 	eof := false

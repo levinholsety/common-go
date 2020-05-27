@@ -1,9 +1,11 @@
 // Package crypto provides cryptography methods.
 package crypto
 
-// Padding is the interface that wraps the padding methods.
-type Padding interface {
-	AddPadding(data []byte, blockSize int) (result []byte)
+import "errors"
+
+// PaddingAlgorithm is the interface that wraps the padding methods.
+type PaddingAlgorithm interface {
+	AddPadding(data []byte, blockSize int) (result []byte, err error)
 	RemovePadding(data []byte) (result []byte, err error)
 }
 
@@ -25,8 +27,14 @@ type Decryptor interface {
 	Decrypt(dst, src []byte) (n int, err error)
 }
 
+// Errors
+var (
+	ErrBadPadding       = errors.New("bad padding")
+	ErrIllegalBlockSize = errors.New("illegal block size")
+)
+
 // Encrypt encrypts data.
-func Encrypt(data []byte, encryptor Encryptor, padding Padding) (result []byte, err error) {
+func Encrypt(data []byte, encryptor Encryptor, padding PaddingAlgorithm) (result []byte, err error) {
 	dataBlockSize := encryptor.DataBlockSize()
 	cipherBlockSize := encryptor.CipherBlockSize()
 	dataLen := len(data)
@@ -52,14 +60,18 @@ func Encrypt(data []byte, encryptor Encryptor, padding Padding) (result []byte, 
 			err = encryptor.Encrypt(result[resultBeginOff:], data[dataBeginOff:])
 		}
 	} else {
-		block := padding.AddPadding(data[dataBeginOff:], dataBlockSize)
+		var block []byte
+		block, err = padding.AddPadding(data[dataBeginOff:], dataBlockSize)
+		if err != nil {
+			return
+		}
 		err = encryptor.Encrypt(result[resultBeginOff:], block)
 	}
 	return
 }
 
 // Decrypt decrypts data.
-func Decrypt(data []byte, decryptor Decryptor, padding Padding) (result []byte, err error) {
+func Decrypt(data []byte, decryptor Decryptor, padding PaddingAlgorithm) (result []byte, err error) {
 	dataBlockSize := decryptor.DataBlockSize()
 	cipherBlockSize := decryptor.CipherBlockSize()
 	dataLen := len(data)

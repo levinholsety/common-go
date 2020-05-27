@@ -8,7 +8,7 @@ import (
 type encryptionWriter struct {
 	writer          io.Writer
 	encryptor       Encryptor
-	padding         Padding
+	padding         PaddingAlgorithm
 	dataBlockSize   int
 	dataBlock       []byte
 	dataBlockOffset int
@@ -54,7 +54,12 @@ func (p *encryptionWriter) Close() (err error) {
 			}
 		}
 	} else {
-		if err = p.encryptor.Encrypt(p.cipherBlock, p.padding.AddPadding(p.dataBlock[:p.dataBlockOffset], p.dataBlockSize)); err != nil {
+		var block []byte
+		block, err = p.padding.AddPadding(p.dataBlock[:p.dataBlockOffset], p.dataBlockSize)
+		if err != nil {
+			return
+		}
+		if err = p.encryptor.Encrypt(p.cipherBlock, block); err != nil {
 			return
 		}
 		if _, err = p.writer.Write(p.cipherBlock); err != nil {
@@ -69,7 +74,7 @@ func (p *encryptionWriter) Close() (err error) {
 // w holds the data to be encrypted.
 // The data will be encrypted after it has been written to the encryption writer.
 // Remember to close the encryption writer at the end.
-func NewEncryptionWriter(w io.Writer, encryptor Encryptor, padding Padding) io.WriteCloser {
+func NewEncryptionWriter(w io.Writer, encryptor Encryptor, padding PaddingAlgorithm) io.WriteCloser {
 	dataBlockSize := encryptor.DataBlockSize()
 	cipherBlockSize := encryptor.CipherBlockSize()
 	return &encryptionWriter{

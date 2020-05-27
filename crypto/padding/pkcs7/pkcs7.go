@@ -2,37 +2,38 @@
 package pkcs7
 
 import (
-	"errors"
-
 	"github.com/levinholsety/common-go/comm"
 	"github.com/levinholsety/common-go/crypto"
 )
 
-type padding struct{}
+type paddingAlgorithm struct{}
 
 // AddPadding adds padding to last block and returns it.
-func (p *padding) AddPadding(data []byte, blockSize int) (result []byte) {
-	dataLen := len(data)
-	resultLen := (dataLen + blockSize) / blockSize * blockSize
-	result = make([]byte, resultLen)
-	copy(result, data)
-	paddingByte := byte(resultLen - dataLen)
-	comm.FillByteArray(result[dataLen:], paddingByte)
+func (p *paddingAlgorithm) AddPadding(data []byte, blockSize int) (result []byte, err error) {
+	if blockSize < 0x01 || blockSize > 0xff {
+		err = crypto.ErrIllegalBlockSize
+		return
+	}
+	data = data[len(data)/blockSize*blockSize:]
+	result = make([]byte, blockSize)
+	n := copy(result, data)
+	paddingByte := byte(blockSize - len(data))
+	comm.FillByteArray(result[n:], paddingByte)
 	return
 }
 
 // RemovePadding removes padding from data.
-func (p *padding) RemovePadding(data []byte) (result []byte, err error) {
+func (p *paddingAlgorithm) RemovePadding(data []byte) (result []byte, err error) {
 	dataLen := len(data)
 	paddingByte := data[dataLen-1]
 	resultLen := dataLen - int(paddingByte)
 	if resultLen < 0 {
-		err = errors.New("bad padding")
+		err = crypto.ErrBadPadding
 		return
 	}
 	for _, b := range data[resultLen:] {
 		if b != paddingByte {
-			err = errors.New("bad padding")
+			err = crypto.ErrBadPadding
 			return
 		}
 	}
@@ -40,7 +41,7 @@ func (p *padding) RemovePadding(data []byte) (result []byte, err error) {
 	return
 }
 
-// NewPadding creates and returns an instance of PKCS #7 padding.
-func NewPadding() crypto.Padding {
-	return &padding{}
+// NewPaddingAlgorithm creates and returns an instance of PKCS #7 padding.
+func NewPaddingAlgorithm() crypto.PaddingAlgorithm {
+	return &paddingAlgorithm{}
 }

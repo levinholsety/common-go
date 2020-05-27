@@ -23,7 +23,7 @@ func prepareCipher(key, iv []byte, f func(b cipher.Block) error) error {
 // Encrypt encrypts data with AES CBC algorithm.
 func Encrypt(data, key, iv []byte) (result []byte, err error) {
 	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
-		result, err = crypto.Encrypt(data, &block{b}, pkcs7.NewPadding())
+		result, err = crypto.Encrypt(data, &block{b}, pkcs7.NewPaddingAlgorithm())
 		return
 	})
 	return
@@ -32,7 +32,7 @@ func Encrypt(data, key, iv []byte) (result []byte, err error) {
 // Decrypt decrypts data with AES CBC algorithm.
 func Decrypt(data, key, iv []byte) (result []byte, err error) {
 	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
-		result, err = crypto.Decrypt(data, &block{b}, pkcs7.NewPadding())
+		result, err = crypto.Decrypt(data, &block{b}, pkcs7.NewPaddingAlgorithm())
 		return
 	})
 	return
@@ -43,7 +43,7 @@ func Decrypt(data, key, iv []byte) (result []byte, err error) {
 // When write data into it, the data will be encrypted with AES/CBC/PKCS7Padding algorithm.
 func NewEncryptionWriter(w io.Writer, key, iv []byte) (ew io.WriteCloser, err error) {
 	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
-		ew = crypto.NewEncryptionWriter(w, &block{b}, pkcs7.NewPadding())
+		ew = crypto.NewEncryptionWriter(w, &block{b}, pkcs7.NewPaddingAlgorithm())
 		return
 	})
 	return
@@ -54,7 +54,7 @@ func NewEncryptionWriter(w io.Writer, key, iv []byte) (ew io.WriteCloser, err er
 // When read data from it, the data will be decrypted with AES/CBC/PKCS7Padding algorithm.
 func NewDecryptionReader(r io.Reader, key, iv []byte) (dr io.Reader, err error) {
 	err = prepareCipher(key, iv, func(b cipher.Block) (err error) {
-		dr, err = crypto.NewDecryptionReader(r, &block{b}, pkcs7.NewPadding())
+		dr, err = crypto.NewDecryptionReader(r, &block{b}, pkcs7.NewPaddingAlgorithm())
 		return
 	})
 	return
