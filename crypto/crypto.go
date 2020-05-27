@@ -1,17 +1,19 @@
 // Package crypto provides cryptography methods.
 package crypto
 
-import "errors"
+import (
+	"errors"
+)
 
 // PaddingAlgorithm is the interface that wraps the padding methods.
 type PaddingAlgorithm interface {
-	AddPadding(data []byte, blockSize int) (result []byte, err error)
+	AddPadding(block []byte, dataLen int) (err error)
 	RemovePadding(data []byte) (result []byte, err error)
 }
 
 // BlockSizeInfo is the interface that wraps the methods to get size info of block.
 type BlockSizeInfo interface {
-	DataBlockSize() int
+	BlockSize() int
 	CipherBlockSize() int
 }
 
@@ -33,62 +35,71 @@ var (
 	ErrIllegalBlockSize = errors.New("illegal block size")
 )
 
-// Encrypt encrypts data.
-func Encrypt(data []byte, encryptor Encryptor, padding PaddingAlgorithm) (result []byte, err error) {
-	dataBlockSize := encryptor.DataBlockSize()
-	cipherBlockSize := encryptor.CipherBlockSize()
-	dataLen := len(data)
-	dataBeginOff, dataEndOff := 0, dataBlockSize
-	var resultLen int
-	if padding == nil {
-		resultLen = (dataLen + dataBlockSize - 1) / dataBlockSize * cipherBlockSize
-	} else {
-		resultLen = (dataLen + dataBlockSize) / dataBlockSize * cipherBlockSize
-	}
-	result = make([]byte, resultLen)
-	resultBeginOff := 0
-	for dataEndOff <= dataLen {
-		if err = encryptor.Encrypt(result[resultBeginOff:], data[dataBeginOff:dataEndOff]); err != nil {
-			return
-		}
-		resultBeginOff += cipherBlockSize
-		dataBeginOff = dataEndOff
-		dataEndOff += dataBlockSize
-	}
-	if padding == nil {
-		if dataBeginOff < dataLen {
-			err = encryptor.Encrypt(result[resultBeginOff:], data[dataBeginOff:])
-		}
-	} else {
-		var block []byte
-		block, err = padding.AddPadding(data[dataBeginOff:], dataBlockSize)
+func readBlocks(data []byte, blockSize int, paddingAlg PaddingAlgorithm, onRead func(block []byte) error) (err error) {
+	for len(data) >= blockSize {
+		err = onRead(data[:blockSize])
 		if err != nil {
 			return
 		}
-		err = encryptor.Encrypt(result[resultBeginOff:], block)
+		data = data[blockSize:]
+	}
+	if paddingAlg == nil {
+		err = onRead(data)
+	} else {
+		block := make([]byte, blockSize)
+		err = paddingAlg.AddPadding(block, copy(block, data))
+		if err != nil {
+			return
+		}
+		err = onRead(block)
 	}
 	return
 }
 
-// Decrypt decrypts data.
-func Decrypt(data []byte, decryptor Decryptor, padding PaddingAlgorithm) (result []byte, err error) {
-	dataBlockSize := decryptor.DataBlockSize()
-	cipherBlockSize := decryptor.CipherBlockSize()
-	dataLen := len(data)
-	dataBeginOff := 0
-	result = make([]byte, dataLen/cipherBlockSize*dataBlockSize)
-	resultBeginOff := 0
-	for dataBeginOff < dataLen {
-		var n int
-		if n, err = decryptor.Decrypt(result[resultBeginOff:], data[dataBeginOff:dataBeginOff+cipherBlockSize]); err != nil {
+// Encrypt encrypts data.
+func Encrypt(data []byte, encryptor Encryptor, paddingAlg PaddingAlgorithm) (result []byte, err error) {
+	blockSize := encryptor.BlockSize()
+	cipherBlockSize := encryptor.CipherBlockSize()
+	result = make([]byte, (len(data)+blockSize)/blockSize*cipherBlockSize)
+	offset := 0
+	err = readBlocks(data, blockSize, paddingAlg, func(block []byte) (err error) {
+		err = encryptor.Encrypt(result[offset:], block)
+		if err != nil {
 			return
 		}
-		resultBeginOff += n
-		dataBeginOff += cipherBlockSize
+		offset += cipherBlockSize
+		return
+	})
+	return
+}
+
+// Decrypt decrypts data.
+func Decrypt(data []byte, decryptor Decryptor, paddingAlg PaddingAlgorithm) (result []byte, err error) {
+	cipherBlockSize := decryptor.CipherBlockSize()
+	dataLen := len(data)
+	if dataLen%cipherBlockSize != 0 {
+		err = ErrBadPadding
+		return
 	}
-	result = result[:resultBeginOff]
-	if padding != nil {
-		result, err = padding.RemovePadding(result)
+	blockSize := decryptor.BlockSize()
+	result = make([]byte, dataLen/cipherBlockSize*blockSize)
+	offset := 0
+	for len(data) > cipherBlockSize {
+		_, err = decryptor.Decrypt(result[offset:], data[:cipherBlockSize])
+		if err != nil {
+			return
+		}
+		data = data[cipherBlockSize:]
+		offset += blockSize
+	}
+	n, err := decryptor.Decrypt(result[offset:], data)
+	if err != nil {
+		return
+	}
+	if paddingAlg == nil {
+		result = result[:len(result)-blockSize+n]
+	} else {
+		result, err = paddingAlg.RemovePadding(result)
 	}
 	return
 }

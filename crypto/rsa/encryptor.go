@@ -9,7 +9,7 @@ type encryptor struct {
 	publicKey *rsa.PublicKey
 }
 
-func (p *encryptor) DataBlockSize() int {
+func (p *encryptor) BlockSize() int {
 	return p.publicKey.Size() - 11
 }
 

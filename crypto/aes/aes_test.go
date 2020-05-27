@@ -77,8 +77,9 @@ func BenchmarkSystemAESEncrypt(tb *testing.B) {
 		var b cipher.Block
 		b, err = aes2.NewCipher(key)
 		assert.NoError(tb, err)
-		var d []byte
-		d, err = pkcs7.NewPaddingAlgorithm().AddPadding(data, b.BlockSize())
+		d := make([]byte, (len(data)+b.BlockSize())/b.BlockSize()*b.BlockSize())
+		n := copy(d, data)
+		err = pkcs7.NewPaddingAlgorithm().AddPadding(d[len(d)-b.BlockSize():], n%b.BlockSize())
 		assert.NoError(tb, err)
 		result := make([]byte, len(d))
 		cipher.NewCBCEncrypter(b, iv).CryptBlocks(result, d)

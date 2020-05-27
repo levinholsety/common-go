@@ -9,7 +9,7 @@ type decryptor struct {
 	privateKey *rsa.PrivateKey
 }
 
-func (p *decryptor) DataBlockSize() int {
+func (p *decryptor) BlockSize() int {
 	return p.privateKey.Size() - 11
 }
 

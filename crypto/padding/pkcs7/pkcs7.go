@@ -8,25 +8,26 @@ import (
 
 type paddingAlgorithm struct{}
 
-// AddPadding adds padding to last block and returns it.
-func (p *paddingAlgorithm) AddPadding(data []byte, blockSize int) (result []byte, err error) {
+// AddPadding adds padding to data and returns it.
+func (p *paddingAlgorithm) AddPadding(block []byte, dataLen int) (err error) {
+	blockSize := len(block)
 	if blockSize < 0x01 || blockSize > 0xff {
 		err = crypto.ErrIllegalBlockSize
 		return
 	}
-	data = data[len(data)/blockSize*blockSize:]
-	result = make([]byte, blockSize)
-	n := copy(result, data)
-	paddingByte := byte(blockSize - len(data))
-	comm.FillByteArray(result[n:], paddingByte)
+	comm.FillByteArray(block[dataLen:], byte(blockSize-dataLen))
 	return
 }
 
 // RemovePadding removes padding from data.
 func (p *paddingAlgorithm) RemovePadding(data []byte) (result []byte, err error) {
-	dataLen := len(data)
-	paddingByte := data[dataLen-1]
-	resultLen := dataLen - int(paddingByte)
+	length := len(data)
+	if length < 1 {
+		err = crypto.ErrBadPadding
+		return
+	}
+	paddingByte := data[length-1]
+	resultLen := length - int(paddingByte)
 	if resultLen < 0 {
 		err = crypto.ErrBadPadding
 		return

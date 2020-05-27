@@ -6,7 +6,7 @@ type block struct {
 	block cipher.Block
 }
 
-func (p *block) DataBlockSize() int {
+func (p *block) BlockSize() int {
 	return p.block.BlockSize()
 }
 
