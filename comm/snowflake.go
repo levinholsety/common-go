@@ -1,49 +1,58 @@
 package comm
 
 import (
-	"log"
+	"errors"
 	"sync"
 	"time"
 )
 
-// Snowflake is a service used to generate unique IDs for objects within Twitter. This is an implementation.
-type Snowflake struct {
-	Epoch          int64
-	NodeIDBits     uint
-	SequenceIDBits uint
+var (
+	errOverflowedNodeID = errors.New("overflowed node id")
+)
+
+// NewSnowflake creates an instance of snowflake and returns it.
+func NewSnowflake(nodeIDBits, sequenceIDBits uint8, epoch time.Time, nodeID int64) IDGenerator {
+	if nodeID>>nodeIDBits > 0 {
+		panic(errOverflowedNodeID)
+	}
+	return &snowflake{
+		nodeIDBits:     nodeIDBits,
+		sequenceIDBits: sequenceIDBits,
+		epoch:          TimeMilli(epoch),
+	}
+}
+
+// snowflake is a service used to generate unique IDs for objects within Twitter. This is an implementation.
+type snowflake struct {
 	lock           sync.Mutex
+	nodeIDBits     uint8
+	sequenceIDBits uint8
+	epoch          int64
+	nodeID         int64
 	timestamp      int64
 	sequenceID     int64
 }
 
-// NewIDOfNode creates an unique ID of specified node.
-func (p *Snowflake) NewIDOfNode(nodeID int64) int64 {
-	if nodeID>>p.NodeIDBits > 0 {
-		log.Fatalf("Node ID(0 to %d) is too large: %d", 1<<p.NodeIDBits-1, nodeID)
-	}
+// NewID creates an unique ID.
+func (p *snowflake) NewID() int64 {
 	timestamp, sequenceID := p.next()
-	id := timestamp - p.Epoch
-	id <<= p.NodeIDBits
-	id |= nodeID
-	id <<= p.SequenceIDBits
+	id := timestamp - p.epoch
+	id <<= p.nodeIDBits
+	id |= p.nodeID
+	id <<= p.sequenceIDBits
 	id |= sequenceID
 	return id
 }
 
-// NewID creates an unique ID.
-func (p *Snowflake) NewID() int64 {
-	return p.NewIDOfNode(0)
-}
-
-func (p *Snowflake) next() (timestamp int64, sequenceID int64) {
+func (p *snowflake) next() (timestamp int64, sequenceID int64) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	timestamp = CurrentTimeMillis()
+	timestamp = UnixMilli()
 	if timestamp != p.timestamp {
 		sequenceID = 0
 	} else {
 		sequenceID = p.sequenceID + 1
-		if sequenceID>>p.SequenceIDBits > 0 {
+		if sequenceID>>p.sequenceIDBits > 0 {
 			time.Sleep(time.Millisecond)
 			timestamp++
 			sequenceID = 0

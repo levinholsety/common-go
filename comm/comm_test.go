@@ -3,28 +3,31 @@ package comm_test
 import (
 	"testing"
 
+	"github.com/levinholsety/common-go/assert"
 	"github.com/levinholsety/common-go/comm"
 )
 
 func Test_GenerateID(t *testing.T) {
-	iterationCount := 10000
 	threadCount := 100
-	idCount := iterationCount * threadCount
+	iterationCount := 10000
+	idCount := threadCount * iterationCount
 	ch := make(chan int64, idCount)
 	for i := 0; i < threadCount; i++ {
-		go func(index int) {
+		go func() {
 			for i := 0; i < iterationCount; i++ {
-				ch <- comm.UniqueID()
+				ch <- comm.GenerateID()
 			}
-		}(i)
+		}()
 	}
 	idMap := make(map[int64]bool)
 	for i := 0; i < idCount; i++ {
 		idMap[<-ch] = false
 	}
-	close(ch)
-	actualIDCount := len(idMap)
-	if actualIDCount != idCount {
-		t.Errorf("expected: %d, actrual: %d", idCount, actualIDCount)
+	assert.IntEqual(t, idCount, len(idMap))
+}
+
+func Benchmark_GenerateID(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		comm.GenerateID()
 	}
 }

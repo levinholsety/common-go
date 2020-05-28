@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-// TimeMillis returns unix timestamp in milliseconds of specified time.
-func TimeMillis(t time.Time) int64 {
-	return t.Unix()*1000 + int64(t.Nanosecond())/time.Millisecond.Nanoseconds()
+// TimeMilli returns unix timestamp of specified time in millisecond.
+func TimeMilli(t time.Time) int64 {
+	return t.Unix()*1e3 + int64(t.Nanosecond()/1e6)
 }
 
-// CurrentTimeMillis returns current unix timestamp in milliseconds.
-func CurrentTimeMillis() int64 {
-	return TimeMillis(time.Now())
+// UnixMilli returns current unix timestamp in millisecond.
+func UnixMilli() int64 {
+	return TimeMilli(time.Now())
 }
 
 func div(a, b int64) (int64, int64) {

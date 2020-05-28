@@ -27,9 +27,9 @@ func OpenWrite(filename string, onOpen func(file *os.File) error) error {
 
 // CopyFile copies a file to another place.
 func CopyFile(dstFileName, srcFileName string) (n int64, err error) {
-	err = OpenRead(srcFileName, func(srcFile *os.File) error {
+	OpenRead(srcFileName, func(srcFile *os.File) error {
 		return OpenWrite(dstFileName, func(dstFile *os.File) error {
-			n, err = io.Copy(dstFile, srcFile)
+			n, err = (io.Copy(dstFile, srcFile))
 			return err
 		})
 	})

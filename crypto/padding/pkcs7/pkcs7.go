@@ -15,7 +15,7 @@ func (p *paddingAlgorithm) AddPadding(block []byte, dataLen int) (err error) {
 		err = crypto.ErrIllegalBlockSize
 		return
 	}
-	comm.FillByteArray(block[dataLen:], byte(blockSize-dataLen))
+	comm.FillBytes(block[dataLen:], byte(blockSize-dataLen))
 	return
 }
 

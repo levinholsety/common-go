@@ -8,14 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 )
-
-var sf = &Snowflake{
-	Epoch:          TimeMillis(time.Date(2016, 11, 1, 0, 0, 0, 0, time.UTC)),
-	NodeIDBits:     10,
-	SequenceIDBits: 12,
-}
 
 // IsWindows returns whether current os is windows.
 func IsWindows() bool {
@@ -40,16 +33,6 @@ func ExecutablePath() (executablePath string, err error) {
 // StartupPath returns startup path.
 func StartupPath() (string, error) {
 	return filepath.Abs(".")
-}
-
-// UniqueIDOfNode generates an unique ID of specified node.
-func UniqueIDOfNode(nodeID int64) int64 {
-	return sf.NewIDOfNode(nodeID)
-}
-
-// UniqueID generates an unique ID.
-func UniqueID() int64 {
-	return sf.NewID()
 }
 
 //Random fill random bytes in buffer.
