@@ -16,7 +16,7 @@ type TextWriter struct {
 	indentLevel   int
 }
 
-// NewTextWriter creates a new TextWriter.
+// NewTextWriter creates and returns a new TextWriter.
 func NewTextWriter(w io.Writer) *TextWriter {
 	return &TextWriter{
 		writer:        w,
@@ -29,40 +29,47 @@ func NewTextWriter(w io.Writer) *TextWriter {
 	}
 }
 
-// WriteString writes string value.
-func (p *TextWriter) WriteString(format string, args ...interface{}) (n int, err error) {
-	text := fmt.Sprintf(format, args...)
-	n, err = p.writer.Write([]byte(text))
+// WriteString writes string to TextWriter.
+func (p *TextWriter) WriteString(s string) (n int, err error) {
+	n, err = p.writer.Write([]byte(s))
 	if err != nil {
 		p.OnError(err)
 	}
 	return
 }
 
-// WriteLine writes text followed with a line separator.
-func (p *TextWriter) WriteLine(format string, args ...interface{}) (n int, err error) {
-	var count int
+// WriteFormat writes formatted string to TextWriter.
+func (p *TextWriter) WriteFormat(format string, args ...interface{}) (n int, err error) {
+	return p.WriteString(fmt.Sprintf(format, args...))
+}
+
+// WriteLine writes string followed with a line separator to TextWriter.
+func (p *TextWriter) WriteLine(s string) (n int, err error) {
+	counter := &comm.Counter{}
 	for i := 0; i < p.indentLevel; i++ {
-		count, err = p.WriteString(p.LineIndent)
+		err = counter.Add(p.WriteString(p.LineIndent))
 		if err != nil {
 			return
 		}
-		n += count
 	}
-	count, err = p.WriteString(format, args...)
+	err = counter.Add(p.WriteString(s))
 	if err != nil {
 		return
 	}
-	n += count
-	count, err = p.WriteString(p.LineSeparator)
+	err = counter.Add(p.WriteString(p.LineSeparator))
 	if err != nil {
 		return
 	}
-	n += count
+	n = counter.Count()
 	return
 }
 
-// Indent indents line when invokes WriteLine function.
+// WriteLineFormat writes formatted string followed with a line separator to TextWriter.
+func (p *TextWriter) WriteLineFormat(format string, args ...interface{}) (n int, err error) {
+	return p.WriteLine(fmt.Sprintf(format, args...))
+}
+
+// Indent indents line when invokes WriteLine or WriteLineFormat function.
 func (p *TextWriter) Indent(f func()) {
 	p.indentLevel++
 	f()
