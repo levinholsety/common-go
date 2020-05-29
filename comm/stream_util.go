@@ -1,27 +1,19 @@
 package comm
 
-import "io"
-
-// ReadResponse holds the data just been read.
-type ReadResponse struct {
-	Buffer    []byte
-	TotalRead int
-}
+import (
+	"io"
+)
 
 // ReadStream reads data from io.Reader. Function onRead will be invoked when some data have been read into buffer.
-func ReadStream(r io.Reader, bufferSize int, onRead func(resp *ReadResponse) error) error {
+func ReadStream(r io.Reader, bufferSize int, onRead func(buf []byte) error) error {
 	buf := make([]byte, bufferSize)
-	counter := &Counter{}
-	resp := &ReadResponse{}
 	for {
-		err := counter.Add(r.Read(buf))
+		n, err := r.Read(buf)
 		if err != nil && err != io.EOF {
 			return err
 		}
-		if counter.N() > 0 {
-			resp.Buffer = buf[:counter.N()]
-			resp.TotalRead = counter.Count()
-			err := onRead(resp)
+		if n > 0 {
+			err := onRead(buf[:n])
 			if err != nil {
 				return err
 			}
