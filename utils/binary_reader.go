@@ -11,7 +11,6 @@ func NewBinaryReader(r io.Reader, o binary.ByteOrder) *BinaryReader {
 	return &BinaryReader{
 		reader:    r,
 		ByteOrder: o,
-		OnError:   func(err error) { panic(err) },
 	}
 }
 
@@ -29,7 +28,7 @@ func (p *BinaryReader) Read(data interface{}) (err error) {
 	} else {
 		err = binary.Read(p.reader, p.ByteOrder, data)
 	}
-	if err != nil {
+	if err != nil && p.OnError != nil {
 		p.OnError(err)
 	}
 	return
@@ -133,5 +132,15 @@ func (p *BinaryReader) ReadString() (result string, err error) {
 		return
 	}
 	result = string(data)
+	return
+}
+
+// ReadStringFixed reads string in fixed length.
+func (p *BinaryReader) ReadStringFixed(length uint) (result string, err error) {
+	buf, err := p.ReadBytes(length)
+	if err != nil {
+		return
+	}
+	result = string(buf)
 	return
 }
