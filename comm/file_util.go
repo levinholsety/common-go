@@ -35,3 +35,17 @@ func CopyFile(dstFileName, srcFileName string) (n int64, err error) {
 	})
 	return
 }
+
+// FileToSectionReader creates a io.SectionReader from os.File.
+func FileToSectionReader(file *os.File) (result *io.SectionReader, err error) {
+	off, err := file.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return
+	}
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return
+	}
+	result = io.NewSectionReader(file, off, fileInfo.Size()-off)
+	return
+}
