@@ -12,7 +12,7 @@ import (
 
 func prepareData(tb testing.TB, f func(data []byte)) {
 	f([]byte("Hello 世界！"))
-	for _, length := range []int{0, 1, 15, 16, 17, 255, 256, 257} {
+	for _, length := range []uint{0, 1, 15, 16, 17, 255, 256, 257} {
 		data, err := comm.RandomBytes(length)
 		assert.NoError(tb, err)
 		f(data)

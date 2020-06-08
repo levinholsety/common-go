@@ -1,6 +1,10 @@
 package model
 
-import "bytes"
+import (
+	"bytes"
+
+	"github.com/levinholsety/common-go/comm"
+)
 
 // ComparisonResults represents comparison results.
 type ComparisonResults []ComparisonResult
@@ -169,7 +173,7 @@ func Compare(table *Table, oldTable *Table) (results ComparisonResults) {
 		results = append(results, &PrimaryKeyMissingComparisonResult{Table: table})
 	} else if len(pkColumns) == 0 && len(oldPKColumns) > 0 {
 		results = append(results, &PrimaryKeyRedundantComparisonResult{TableName: table.Name})
-	} else if len(pkColumns) > 0 && len(oldPKColumns) > 0 && !stringArrayEqual(pkColumns, oldPKColumns) {
+	} else if len(pkColumns) > 0 && len(oldPKColumns) > 0 && !comm.StringArrayEqual(pkColumns, oldPKColumns) {
 		results = append(results, &PrimaryKeyChangedComparisonResult{Table: table})
 	}
 	return
@@ -189,16 +193,4 @@ func columnEqual(column1, column2 *Column) bool {
 		column1.Type == column2.Type &&
 		column1.Nullable == column2.Nullable &&
 		column1.Comment == column2.Comment
-}
-
-func stringArrayEqual(array1, array2 []string) bool {
-	if len(array1) != len(array2) {
-		return false
-	}
-	for i, str1 := range array1 {
-		if str1 != array2[i] {
-			return false
-		}
-	}
-	return true
 }
