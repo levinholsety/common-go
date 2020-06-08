@@ -3,6 +3,7 @@ package model
 // DataClass represents the class of data type.
 type DataClass int
 
+// DataClasses.
 const (
 	Text DataClass = iota + 1
 	Number
@@ -10,36 +11,41 @@ const (
 	Time
 )
 
+// Model represents database model.
 type Model struct {
-	Schemas []*Schema
+	Schemas []*Schema `json:"schemas"`
 }
 
+// Schema represents database schema.
 type Schema struct {
-	Name   string
-	Tables []*Table
+	Name   string   `json:"name"`
+	Tables []*Table `json:"tables"`
 }
 
+// Table represents database table.
 type Table struct {
-	Name    string
-	Comment string
-	Columns []*Column
+	Name    string    `json:"name"`
+	Comment string    `json:"comment,omitempty"`
+	Columns []*Column `json:"columns"`
 }
 
-func (p *Table) PrimaryKeyColumns() (result []*Column) {
+// PrimaryKeyColumnNames returns the names of primary key columns.
+func (p *Table) PrimaryKeyColumnNames() (result []string) {
 	for _, column := range p.Columns {
 		if column.IsPrimaryKey {
-			result = append(result, column)
+			result = append(result, column.Name)
 		}
 	}
 	return
 }
 
+// Column represents database table column.
 type Column struct {
-	Name         string
-	DataType     string
-	DataClass    DataClass
-	Type         string
-	Nullable     bool
-	IsPrimaryKey bool
-	Comment      string
+	Name         string    `json:"name"`
+	DataType     string    `json:"dataType"`
+	DataClass    DataClass `json:"dataClass"`
+	Type         string    `json:"type"`
+	Nullable     bool      `json:"nullable"`
+	IsPrimaryKey bool      `json:"isPrimaryKey"`
+	Comment      string    `json:"comment,omitempty"`
 }

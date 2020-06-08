@@ -148,58 +148,55 @@ func Compare(table *Table, oldTable *Table) (results ComparisonResults) {
 		results = append(results, &TableCommentChangedComparisonResult{Table: table})
 	}
 	for i, column := range table.Columns {
-		oldColumn, ok := findColumn(oldTable, column.Name)
-		if !ok {
+		oldColumn := findColumn(oldTable, column.Name)
+		if oldColumn == nil {
 			results = append(results, &ColumnMissingComparisonResult{Table: table, ColumnIndex: i})
 		} else {
-			if !isColumnSame(column, oldColumn) {
+			if !columnEqual(column, oldColumn) {
 				results = append(results, &ColumnChangedComparisonResult{Table: table, ColumnIndex: i})
 			}
 		}
 	}
 	for _, oldColumn := range oldTable.Columns {
-		_, ok := findColumn(table, oldColumn.Name)
-		if !ok {
+		column := findColumn(table, oldColumn.Name)
+		if column == nil {
 			results = append(results, &ColumnRedundantComparisonResult{TableName: table.Name, ColumnName: oldColumn.Name})
 		}
 	}
-	pkColumns := table.PrimaryKeyColumns()
-	oldPKColumns := oldTable.PrimaryKeyColumns()
+	pkColumns := table.PrimaryKeyColumnNames()
+	oldPKColumns := oldTable.PrimaryKeyColumnNames()
 	if len(pkColumns) > 0 && len(oldPKColumns) == 0 {
 		results = append(results, &PrimaryKeyMissingComparisonResult{Table: table})
 	} else if len(pkColumns) == 0 && len(oldPKColumns) > 0 {
 		results = append(results, &PrimaryKeyRedundantComparisonResult{TableName: table.Name})
-	} else if len(pkColumns) > 0 && len(oldPKColumns) > 0 && !isColumnsSame(pkColumns, oldPKColumns) {
+	} else if len(pkColumns) > 0 && len(oldPKColumns) > 0 && !stringArrayEqual(pkColumns, oldPKColumns) {
 		results = append(results, &PrimaryKeyChangedComparisonResult{Table: table})
 	}
 	return
 }
 
-func findColumn(table *Table, columnName string) (column *Column, ok bool) {
-	for _, column = range table.Columns {
-		if column.Name == columnName {
-			ok = true
-			return
+func findColumn(table *Table, columnName string) *Column {
+	for _, col := range table.Columns {
+		if col.Name == columnName {
+			return col
 		}
 	}
-	ok = false
-	return
+	return nil
 }
 
-func isColumnSame(column1, column2 *Column) bool {
+func columnEqual(column1, column2 *Column) bool {
 	return column1.Name == column2.Name &&
 		column1.Type == column2.Type &&
 		column1.Nullable == column2.Nullable &&
 		column1.Comment == column2.Comment
 }
 
-func isColumnsSame(columns1, columns2 []*Column) bool {
-	if len(columns1) != len(columns2) {
+func stringArrayEqual(array1, array2 []string) bool {
+	if len(array1) != len(array2) {
 		return false
 	}
-	for i, col1 := range columns1 {
-		col2 := columns2[i]
-		if col1.Name != col2.Name {
+	for i, str1 := range array1 {
+		if str1 != array2[i] {
 			return false
 		}
 	}
