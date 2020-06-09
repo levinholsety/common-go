@@ -14,7 +14,7 @@ type cbcBlock struct {
 	buf   []byte
 }
 
-var _ cipher.Block = new(cbcBlock)
+var _ cipher.Block = (*cbcBlock)(nil)
 
 // NewCipher creates a cipher with CBC mode.
 func NewCipher(b cipher.Block, iv []byte) cipher.Block {

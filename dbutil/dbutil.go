@@ -8,8 +8,8 @@ type Connection interface {
 	Open() (*sql.DB, error)
 }
 
-// Open opens a connection.
-func Open(conn Connection, f func(db *sql.DB) error) (err error) {
+// Open creates a sql.DB instance and closes it after onOpened has been invoked.
+func Open(conn Connection, onOpened func(db *sql.DB) error) (err error) {
 	db, err := conn.Open()
 	if err != nil {
 		return
@@ -19,6 +19,6 @@ func Open(conn Connection, f func(db *sql.DB) error) (err error) {
 	if err != nil {
 		return
 	}
-	err = f(db)
+	err = onOpened(db)
 	return
 }

@@ -11,7 +11,7 @@ import (
 // StatementGenerator represents the statement generator for MySQL.
 type StatementGenerator struct{}
 
-var _ model.StatementGenerator = new(StatementGenerator)
+var _ model.StatementGenerator = (*StatementGenerator)(nil)
 
 // GenerateUseStatement generates use database Statement.
 func (p *StatementGenerator) GenerateUseStatement(schema *model.Schema) string {

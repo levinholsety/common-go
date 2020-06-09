@@ -7,22 +7,11 @@ import (
 	"github.com/levinholsety/common-go/dbutil/model"
 )
 
-// ReadModel reads database model of specified schema from database.
-func ReadModel(db *sql.DB, schemaName string) (result *model.Model, err error) {
-	schema := &model.Schema{Name: schemaName}
-	if err = readTables(db, schema); err != nil {
-		return
-	}
-	for _, table := range schema.Tables {
-		if err = readColumns(db, schema, table); err != nil {
-			return
-		}
-	}
-	result = &model.Model{Schemas: []*model.Schema{schema}}
-	return
-}
+// ModelReader provides methods to read database model.
+type ModelReader struct{}
 
-func readSchemas(db *sql.DB, m *model.Model) (err error) {
+// ReadSchemas reads database schemas info into model.
+func (p *ModelReader) ReadSchemas(db *sql.DB, m *model.Model) (err error) {
 	rows, err := db.Query(`select schema_name from information_schema.schemata`)
 	if err != nil {
 		return
@@ -38,8 +27,11 @@ func readSchemas(db *sql.DB, m *model.Model) (err error) {
 	return
 }
 
-func readTables(db *sql.DB, schema *model.Schema) (err error) {
-	rows, err := db.Query(`select table_name,table_comment from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`, schema.Name)
+// ReadTables reads database tables info into schema.
+func (p *ModelReader) ReadTables(db *sql.DB, schema *model.Schema) (err error) {
+	rows, err := db.Query(`select table_name,table_comment
+from information_schema.tables
+where table_schema = ? and table_type = 'BASE TABLE'`, schema.Name)
 	if err != nil {
 		return
 	}
@@ -54,10 +46,11 @@ func readTables(db *sql.DB, schema *model.Schema) (err error) {
 	return
 }
 
-func readColumns(db *sql.DB, schema *model.Schema, table *model.Table) (err error) {
+// ReadColumns reads database columns info into table
+func (p *ModelReader) ReadColumns(db *sql.DB, schemaName string, table *model.Table) (err error) {
 	rows, err := db.Query(`select column_name,data_type,column_type,is_nullable,column_comment,column_key
 from information_schema.columns
-where table_schema = ? and table_name = ? order by ordinal_position`, schema.Name, table.Name)
+where table_schema = ? and table_name = ? order by ordinal_position`, schemaName, table.Name)
 	if err != nil {
 		return
 	}
