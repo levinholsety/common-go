@@ -1,7 +1,7 @@
 package model
 
 import (
-	"bytes"
+	"io"
 
 	"github.com/levinholsety/common-go/comm"
 )
@@ -10,13 +10,12 @@ import (
 type ComparisonResults []ComparisonResult
 
 // GenerateAlterStatements generates alter statements from comparison results.
-func (p ComparisonResults) GenerateAlterStatements(sg StatementGenerator) string {
-	buf := &bytes.Buffer{}
+func (p ComparisonResults) GenerateAlterStatements(w io.Writer, sg StatementGenerator) {
 	for _, result := range p {
-		buf.WriteString(result.GenerateStatement(sg))
-		buf.WriteByte('\n')
+		w.Write([]byte(result.GenerateStatement(sg)))
+		w.Write([]byte{'\n'})
 	}
-	return buf.String()
+	return
 }
 
 // ComparisonResult represents a comparison result.
