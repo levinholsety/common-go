@@ -129,8 +129,27 @@ func (p *PrimaryKeyChangedComparisonResult) GenerateStatement(sg StatementGenera
 		sg.GenerateAddPrimaryKeyStatement(p.Table)
 }
 
-// Compare compares the table with its old version and generates Statement for altering database.
-func Compare(table *Table, oldTable *Table) (results ComparisonResults) {
+// CompareSchema compares the database schema with its old version and generates statement for altering database.
+func CompareSchema(schema, oldSchema *Schema) (results ComparisonResults) {
+	results = make([]ComparisonResult, 0)
+	if schema == nil || oldSchema == nil {
+		return
+	}
+	for _, table := range schema.Tables {
+		oldTable := findTable(oldSchema, table.Name)
+		results = append(results, CompareTable(table, oldTable)...)
+	}
+	for _, oldTable := range oldSchema.Tables {
+		table := findTable(schema, oldTable.Name)
+		if table == nil {
+			results = append(results, &TableRedundantComparisonResult{TableName: oldTable.Name})
+		}
+	}
+	return
+}
+
+// CompareTable compares the table with its old version and generates statement for altering database.
+func CompareTable(table, oldTable *Table) (results ComparisonResults) {
 	results = make([]ComparisonResult, 0)
 	if table == nil && oldTable == nil {
 		return
@@ -176,6 +195,15 @@ func Compare(table *Table, oldTable *Table) (results ComparisonResults) {
 		results = append(results, &PrimaryKeyChangedComparisonResult{Table: table})
 	}
 	return
+}
+
+func findTable(schema *Schema, tableName string) *Table {
+	for _, tbl := range schema.Tables {
+		if tbl.Name == tableName {
+			return tbl
+		}
+	}
+	return nil
 }
 
 func findColumn(table *Table, columnName string) *Column {
