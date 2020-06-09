@@ -14,8 +14,8 @@ type StatementGenerator struct{}
 var _ model.StatementGenerator = (*StatementGenerator)(nil)
 
 // GenerateUseStatement generates use database Statement.
-func (p *StatementGenerator) GenerateUseStatement(schema *model.Schema) string {
-	return fmt.Sprintf("USE `%s`;", schema.Name)
+func (p *StatementGenerator) GenerateUseStatement(schemaName string) string {
+	return fmt.Sprintf("USE `%s`;", schemaName)
 }
 
 func (p *StatementGenerator) columnStatement(column *model.Column) (result string) {
