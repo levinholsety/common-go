@@ -31,6 +31,22 @@ func Register(name string, mdl Module) {
 	mdlMap[name] = mdl
 }
 
+// Listen listens on the address for handling requests.
+func Listen(addr string) error {
+	logger := NewLogger()
+	mux := http.NewServeMux()
+	logger.Log("---")
+	logger.Log("contents:")
+	handleDir(".", mux, logger)
+	logger.Log("modules:")
+	for mdlName, mdl := range mdlMap {
+		logger.Logi(1, "- {pattern: %s, module: %s}", mdlName, reflect.TypeOf(mdl).Elem().String())
+		handleFunc(mux, mdlName, mdl)
+	}
+	logger.Log("listen: '%s'", addr)
+	return http.ListenAndServe(addr, mux)
+}
+
 func handleDir(relativePath string, mux *http.ServeMux, logger *Logger) {
 	dirPath := path.Join("contents", relativePath)
 	fileInfos, err := ioutil.ReadDir(dirPath)
@@ -43,7 +59,7 @@ func handleDir(relativePath string, mux *http.ServeMux, logger *Logger) {
 	}
 	absPath, _ := filepath.Abs(dirPath)
 	logger.Logi(1, "- {pattern: %s, path: '%s'}", pattern, absPath)
-	mux.Handle(pattern, http.FileServer(http.Dir(dirPath)))
+	mux.Handle(pattern, http.StripPrefix(pattern, http.FileServer(http.Dir(dirPath))))
 	for _, fileInfo := range fileInfos {
 		if fileInfo.IsDir() {
 			handleDir(path.Join(relativePath, fileInfo.Name()), mux, logger)
@@ -88,19 +104,4 @@ func writeError(err error, code int, w http.ResponseWriter, logger *Logger) {
 
 func writeNotFound(w http.ResponseWriter, logger *Logger) {
 	writeError(errors.New("page not found"), http.StatusNotFound, w, logger)
-}
-
-// Listen listens on the address for handling requests.
-func Listen(addr string) error {
-	logger := NewLogger()
-	mux := http.NewServeMux()
-	logger.Log("---")
-	logger.Log("contents:")
-	handleDir(".", mux, logger)
-	logger.Log("services:")
-	for mdlName, mdl := range mdlMap {
-		logger.Logi(1, "- {pattern: %s, service: %s}", mdlName, reflect.TypeOf(mdl).Elem().String())
-		handleFunc(mux, mdlName, mdl)
-	}
-	return http.ListenAndServe(addr, mux)
 }

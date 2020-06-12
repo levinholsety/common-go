@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"html/template"
 	"net/http"
+	"path"
 )
 
 // ActionBase provides basic methods of service action.
@@ -24,6 +25,11 @@ func (p *ActionBase) setResponseWriter(w http.ResponseWriter) {
 
 func (p *ActionBase) setRequest(r *http.Request) {
 	p.Request = r
+}
+
+// FormValue returns first value of key from request.
+func (p *ActionBase) FormValue(key string) string {
+	return p.Request.FormValue(key)
 }
 
 // SetContentType sets content type of response.
@@ -72,8 +78,13 @@ func (p *ActionBase) WriteXML(v interface{}) {
 }
 
 // Forward forwards data to template.
-func (p *ActionBase) Forward(data interface{}, filenames ...string) {
-	tmpl, err := template.ParseFiles(filenames...)
+func (p *ActionBase) Forward(data interface{}, funcMap template.FuncMap, filenames ...string) {
+	if len(filenames) == 0 {
+		return
+	}
+	tmpl := template.New(path.Base(filenames[0]))
+	tmpl.Funcs(funcMap)
+	_, err := tmpl.ParseFiles(filenames...)
 	if err != nil {
 		p.WriteError(err)
 		return
