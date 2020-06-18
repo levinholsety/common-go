@@ -25,6 +25,12 @@ func (p *StatementGenerator) columnStatement(column *model.Column) (result strin
 	} else {
 		result += " NOT NULL"
 	}
+	if len(column.Default) > 0 {
+		result += " DEFAULT " + column.Default
+	}
+	if len(column.Extra) > 0 {
+		result += " " + column.Extra
+	}
 	if len(column.Comment) > 0 {
 		result += " COMMENT '" + column.Comment + "'"
 	}
@@ -62,8 +68,9 @@ func (p *StatementGenerator) GenerateCreateTableStatement(table *model.Table) st
 	if len(pkStr) > 0 {
 		w.WriteLine(",")
 		w.WriteString("    ")
-		w.WriteLine(pkStr)
+		w.WriteString(pkStr)
 	}
+	w.WriteLine("")
 	w.WriteString(")")
 	if len(table.Comment) > 0 {
 		w.WriteString(" COMMENT='")

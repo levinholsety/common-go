@@ -47,5 +47,7 @@ type Column struct {
 	Type         string    `json:"type"`
 	Nullable     bool      `json:"nullable"`
 	IsPrimaryKey bool      `json:"isPrimaryKey"`
+	Default      string    `json:"default"`
+	Extra        string    `json:"extra"`
 	Comment      string    `json:"comment,omitempty"`
 }

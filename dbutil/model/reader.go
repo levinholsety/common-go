@@ -1,6 +1,9 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
 
 // Reader provides methods to read model from database.
 type Reader interface {
@@ -8,6 +11,12 @@ type Reader interface {
 	ReadTables(db *sql.DB, schema *Schema) error
 	ReadColumns(db *sql.DB, schemaName string, table *Table) error
 }
+
+// Errors
+var (
+	ErrNoTables  = errors.New("no tables")
+	ErrNoColumns = errors.New("no columns")
+)
 
 // ReadModel reads model of database.
 func ReadModel(db *sql.DB, r Reader) (result *Model, err error) {
@@ -34,10 +43,28 @@ func ReadSchema(db *sql.DB, schemaName string, r Reader) (result *Schema, err er
 	if err = r.ReadTables(db, result); err != nil {
 		return
 	}
+	if len(result.Tables) == 0 {
+		err = ErrNoTables
+		return
+	}
 	for _, table := range result.Tables {
 		if err = r.ReadColumns(db, schemaName, table); err != nil {
 			return
 		}
+	}
+	return
+}
+
+// ReadTable reads model of database table from database.
+func ReadTable(db *sql.DB, schemaName, tableName string, r Reader) (result *Table, err error) {
+	result = &Table{Name: tableName}
+	err = r.ReadColumns(db, schemaName, result)
+	if err != nil {
+		return
+	}
+	if len(result.Columns) == 0 {
+		err = ErrNoColumns
+		return
 	}
 	return
 }
