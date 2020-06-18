@@ -15,8 +15,9 @@ type StatementGenerator struct{}
 var _ model.StatementGenerator = (*StatementGenerator)(nil)
 
 var (
-	reNumber = regexp.MustCompile(`\d+(\.\d+)?`)
-	reTime   = regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})|(\d{4}-\d{2}-\d{2})|(-?\d{2,3}:\d{2}:\d{2})|\d{4}|\d{2}`)
+	reNumber             = regexp.MustCompile(`\d+(\.\d+)?`)
+	reTime               = regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})|(\d{4}-\d{2}-\d{2})|(-?\d{2,3}:\d{2}:\d{2})|\d{4}|\d{2}`)
+	reCommentSpecialChar = regexp.MustCompile(`['\\\r\n]`)
 )
 
 func isTypeWithoutDefaultValue(dataType string) bool {
@@ -28,6 +29,23 @@ func isTypeWithoutDefaultValue(dataType string) bool {
 	default:
 		return false
 	}
+}
+
+func escapeComment(comment string) string {
+	return reCommentSpecialChar.ReplaceAllStringFunc(comment, func(v string) string {
+		switch v {
+		case `'`:
+			return `''`
+		case `\`:
+			return `\\`
+		case "\r":
+			return `\r`
+		case "\n":
+			return `\n`
+		default:
+			return v
+		}
+	})
 }
 
 // GenerateUseStatement generates use database Statement.
@@ -55,7 +73,7 @@ func (p *StatementGenerator) columnStatement(column *model.Column) (result strin
 		result += " " + column.Extra
 	}
 	if len(column.Comment) > 0 {
-		result += " COMMENT '" + column.Comment + "'"
+		result += " COMMENT '" + escapeComment(column.Comment) + "'"
 	}
 	return
 }
@@ -97,7 +115,7 @@ func (p *StatementGenerator) GenerateCreateTableStatement(table *model.Table) st
 	w.WriteString(")")
 	if len(table.Comment) > 0 {
 		w.WriteString(" COMMENT='")
-		w.WriteString(table.Comment)
+		w.WriteString(escapeComment(table.Comment))
 		w.WriteString("'")
 	}
 	w.WriteString(";")
