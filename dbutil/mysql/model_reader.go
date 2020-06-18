@@ -50,7 +50,7 @@ where table_schema = ? and table_type = 'BASE TABLE'`, schema.Name)
 func (p *ModelReader) ReadTable(db *sql.DB, schemaName string, table *model.Table) (err error) {
 	row := db.QueryRow(`select table_name,table_comment
 from information_schema.tables
-where table_schema = ? and table_type = 'BASE TABLE' and table_name = ?`, schemaName, table.Name)
+where table_schema = ? and table_type in ('BASE TABLE','SYSTEM VIEW') and table_name = ?`, schemaName, table.Name)
 	err = row.Scan(&table.Name, &table.Comment)
 	return
 }
