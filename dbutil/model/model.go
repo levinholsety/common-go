@@ -1,5 +1,7 @@
 package model
 
+import "database/sql"
+
 // DataClass represents the class of data type.
 type DataClass int
 
@@ -41,13 +43,13 @@ func (p *Table) PrimaryKeyColumnNames() (result []string) {
 
 // Column represents database table column.
 type Column struct {
-	Name         string    `json:"name"`
-	DataType     string    `json:"dataType"`
-	DataClass    DataClass `json:"dataClass"`
-	Type         string    `json:"type"`
-	Nullable     bool      `json:"nullable"`
-	IsPrimaryKey bool      `json:"isPrimaryKey"`
-	Default      string    `json:"default"`
-	Extra        string    `json:"extra"`
-	Comment      string    `json:"comment,omitempty"`
+	Name         string         `json:"name"`
+	DataType     string         `json:"dataType"`
+	DataClass    DataClass      `json:"dataClass"`
+	Type         string         `json:"type"`
+	Nullable     bool           `json:"nullable"`
+	IsPrimaryKey bool           `json:"isPrimaryKey"`
+	Default      sql.NullString `json:"default"`
+	Extra        string         `json:"extra"`
+	Comment      string         `json:"comment,omitempty"`
 }

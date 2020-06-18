@@ -3,6 +3,7 @@ package mysql
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 
 	"github.com/levinholsety/common-go/dbutil/model"
 	"github.com/levinholsety/common-go/utils"
@@ -13,6 +14,22 @@ type StatementGenerator struct{}
 
 var _ model.StatementGenerator = (*StatementGenerator)(nil)
 
+var (
+	reNumber = regexp.MustCompile(`\d+(\.\d+)?`)
+	reTime   = regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})|(\d{4}-\d{2}-\d{2})|(-?\d{2,3}:\d{2}:\d{2})|\d{4}|\d{2}`)
+)
+
+func isTypeWithoutDefaultValue(dataType string) bool {
+	switch dataType {
+	case "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT":
+		return true
+	case "TINYBLOB", "BLOB", "MEDIUMBLOB", "LONGBLOB":
+		return true
+	default:
+		return false
+	}
+}
+
 // GenerateUseStatement generates use database Statement.
 func (p *StatementGenerator) GenerateUseStatement(schemaName string) string {
 	return fmt.Sprintf("USE `%s`;", schemaName)
@@ -20,13 +37,19 @@ func (p *StatementGenerator) GenerateUseStatement(schemaName string) string {
 
 func (p *StatementGenerator) columnStatement(column *model.Column) (result string) {
 	result = fmt.Sprintf("`%s` %s", column.Name, column.Type)
-	if column.Nullable {
-		result += " NULL"
-	} else {
+	if !column.Nullable {
 		result += " NOT NULL"
 	}
-	if len(column.Default) > 0 {
-		result += " DEFAULT " + column.Default
+	if column.Default.Valid {
+		if column.DataClass == model.Text ||
+			(column.DataClass == model.Number && reNumber.MatchString(column.Default.String)) ||
+			(column.DataClass == model.Time && reTime.MatchString(column.Default.String)) {
+			result += " DEFAULT '" + column.Default.String + "'"
+		} else {
+			result += " DEFAULT " + column.Default.String
+		}
+	} else if column.Nullable && !isTypeWithoutDefaultValue(column.DataType) {
+		result += " DEFAULT NULL"
 	}
 	if len(column.Extra) > 0 {
 		result += " " + column.Extra
