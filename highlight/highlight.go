@@ -14,6 +14,25 @@ var (
 // TextType represents type of text.
 type TextType int
 
+func (v TextType) String() string {
+	switch v {
+	case Normal:
+		return "Normal"
+	case DataType:
+		return "DataType"
+	case Keyword:
+		return "Keyword"
+	case Comment:
+		return "Comment"
+	case String:
+		return "String"
+	case Number:
+		return "Number"
+	default:
+		return "Unknown"
+	}
+}
+
 // TextTypes
 const (
 	Normal TextType = iota
@@ -32,32 +51,36 @@ type Text struct {
 
 // Config represents highlight config.
 type Config struct {
-	DataTypes  []string
-	Keywords   []string
-	KeySymbols []rune
-	Blocks     TextBlocks
+	DataTypes    []string   `json:"dataTypes"`
+	Keywords     []string   `json:"keywords"`
+	KeySymbols   []rune     `json:"keySymbols"`
+	Blocks       TextBlocks `json:"blocks"`
+	dataTypesMap map[string]int
+	keywordsMap  map[string]int
 }
 
 // IsDataType returns true if string v is data type.
 func (p *Config) IsDataType(v string) bool {
-	v = strings.ToLower(v)
-	for _, e := range p.DataTypes {
-		if e == v {
-			return true
+	if p.dataTypesMap == nil {
+		p.dataTypesMap = make(map[string]int)
+		for i, e := range p.DataTypes {
+			p.dataTypesMap[strings.ToLower(e)] = i
 		}
 	}
-	return false
+	_, ok := p.dataTypesMap[strings.ToLower(v)]
+	return ok
 }
 
 // IsKeyword returns true if string v is keyword.
 func (p *Config) IsKeyword(v string) bool {
-	v = strings.ToLower(v)
-	for _, e := range p.Keywords {
-		if e == v {
-			return true
+	if p.keywordsMap == nil {
+		p.keywordsMap = make(map[string]int)
+		for i, e := range p.Keywords {
+			p.keywordsMap[strings.ToLower(e)] = i
 		}
 	}
-	return false
+	_, ok := p.keywordsMap[strings.ToLower(v)]
+	return ok
 }
 
 // IsKeySymbol returns true if string v is key symbol.
@@ -72,10 +95,10 @@ func (p *Config) IsKeySymbol(r rune) bool {
 
 // TextBlock represents text block.
 type TextBlock struct {
-	BeginIdentifier string
-	EndIdentifier   string
-	EscapeChar      rune
-	TextType        TextType
+	BeginIdentifier string   `json:"beginIdentifier"`
+	EndIdentifier   string   `json:"endIdentifier"`
+	EscapeChar      rune     `json:"escapeChar"`
+	TextType        TextType `json:"textType"`
 	escape          bool
 }
 

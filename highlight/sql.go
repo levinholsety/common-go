@@ -8,7 +8,7 @@ var SQLConfig = &Config{
 		"text", "time", "timestamp", "tiny", "tinyblob", "tinyint", "tinytext", "varbinary", "varchar", "year",
 	},
 	Keywords: []string{
-		"accessible", "add", "all", "alter", "analyze", "and", "as", "asc", "asensitive",
+		"accessible", "add", "after", "all", "alter", "analyze", "and", "as", "asc", "asensitive",
 		"before", "between", "bigint", "binary", "blob", "both", "by",
 		"call", "cascade", "case", "change", "char", "character", "charset", "check", "collate", "column", "comment", "condition", "connection", "constraint", "continue", "contributors", "convert", "create", "cross", "current_date", "current_time", "current_timestamp", "current_user", "cursor",
 		"database", "databases", "day_hour", "day_microsecond", "day_minute", "day_second", "dec", "decimal", "declare", "default", "delayed", "delete", "desc", "describe", "deterministic", "distinct", "distinctrow", "div", "double", "drop", "dual",
@@ -20,7 +20,7 @@ var SQLConfig = &Config{
 		"join",
 		"key", "keys", "kill",
 		"leading", "leave", "left", "like", "limit", "linear", "lines", "load", "localtime", "localtimestamp", "lock", "long", "longblob", "longtext", "loop", "low_priority",
-		"match", "mediumblob", "mediumint", "mediumtext", "middleint", "minute_microsecond", "minute_second", "mod", "modifies",
+		"match", "mediumblob", "mediumint", "mediumtext", "middleint", "minute_microsecond", "minute_second", "mod", "modify", "modifies",
 		"natural", "not", "no_write_to_binlog", "null", "numeric",
 		"on", "optimize", "option", "optionally", "or", "order", "out", "outer", "outfile",
 		"precision", "primary", "procedure", "purge",

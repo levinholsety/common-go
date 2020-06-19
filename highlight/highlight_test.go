@@ -6,14 +6,29 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/levinholsety/common-go/assert"
 	"github.com/levinholsety/common-go/highlight"
 )
 
 func Test_highlight(t *testing.T) {
-	data, _ := ioutil.ReadFile(`D:\a.sql`)
-	result := highlight.Parse(string(data), highlight.SQLConfig)
+	data, _ := json.Marshal(highlight.SQLConfig)
+	cfg := &highlight.Config{}
+	err := json.Unmarshal(data, cfg)
+	assert.NoError(t, err)
+	data, _ = ioutil.ReadFile(`D:\a.sql`)
+	result := highlight.Parse(string(data), cfg)
 	for _, text := range result {
-		data, _ = json.Marshal(text)
-		fmt.Println(string(data))
+		fmt.Println(text)
+	}
+
+}
+
+func Benchmark_highlight(b *testing.B) {
+	b.StopTimer()
+	data, _ := ioutil.ReadFile(`D:\a.sql`)
+	text := string(data)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		highlight.Parse(text, highlight.SQLConfig)
 	}
 }
