@@ -104,10 +104,12 @@ type TextBlock struct {
 
 // CheckBegin returns true if founds the begin of the TextBlock.
 func (p *TextBlock) CheckBegin(buf *bytes.Buffer) bool {
-	if buf.Len() < len(p.BeginIdentifier) {
+	bufLen := buf.Len()
+	idLen := len(p.BeginIdentifier)
+	if bufLen < idLen {
 		return false
 	}
-	return p.BeginIdentifier == string(buf.Bytes()[buf.Len()-len(p.BeginIdentifier):])
+	return p.BeginIdentifier == string(buf.Bytes()[bufLen-idLen:])
 }
 
 // CheckEnd returns true if founds the end of the TextBlock.
@@ -120,10 +122,12 @@ func (p *TextBlock) CheckEnd(buf *bytes.Buffer, r rune) bool {
 		p.escape = true
 		return false
 	}
-	if buf.Len() < len(p.EndIdentifier) {
+	bufLen := buf.Len()
+	idLen := len(p.EndIdentifier)
+	if bufLen < idLen {
 		return false
 	}
-	return p.EndIdentifier == string(buf.Bytes()[buf.Len()-len(p.EndIdentifier):])
+	return p.EndIdentifier == string(buf.Bytes()[bufLen-idLen:])
 }
 
 // TextBlocks represents a group of TextBlock.
