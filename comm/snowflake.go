@@ -19,6 +19,7 @@ func NewSnowflake(nodeIDBits, sequenceIDBits uint8, epoch time.Time, nodeID int6
 		nodeIDBits:     nodeIDBits,
 		sequenceIDBits: sequenceIDBits,
 		epoch:          TimeMilli(epoch),
+		nodeID:         nodeID,
 	}
 }
 
